@@ -6,7 +6,7 @@
 
 ## English
 
-**Last updated:** 9 November 2026
+**Last updated:** 9 November 2026  
 **Developer / controller:** Luis Barros (individual developer, Portugal) — contact: **luis.baf0z@gmail.com**
 
 **Summary.** Ashenstride has no account, no ads and no analytics, and the app has **no Internet access**. Your progress and your steps stay on your phone. We do not collect, receive or sell any of your data.
@@ -45,7 +45,7 @@ If this policy changes, the date above will be updated.
 
 ## Português (PT-PT)
 
-**Última atualização:** 9 de novembro de 2026
+**Última atualização:** 9 de novembro de 2026  
 **Programador / responsável:** Luis Barros (programador individual, Portugal) — contacto: **luis.baf0z@gmail.com**
 
 **Resumo.** O Ashenstride não tem conta, anúncios nem estatísticas de utilização, e a app **não tem acesso à Internet**. O teu progresso e os teus passos ficam no teu telemóvel. Não recolhemos, recebemos nem vendemos nenhum dado teu.
