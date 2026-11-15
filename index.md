@@ -33,6 +33,13 @@ If you write to luis.baf0z@gmail.com, we receive your e-mail address and whateve
 - You can revoke the step and notification permissions at any time in Android or Health Connect settings.
 - The developer holds no personal data about you, so there is nothing for us to delete, correct or export; for the cloud copy use the options above. If you believe we hold data about you (for example from an e-mail you sent), write to us and we will answer. You may also complain to your data-protection authority (in Portugal: CNPD, cnpd.pt).
 
+### Delete your data (Ashenstride, by Luis Barros)
+The developer keeps no personal data about you. The only data that can exist outside your phone is the optional **cloud copy** of your game save in **your own Google account**. To delete it:
+1. In the game: **Settings → Data → "Delete cloud copy"**; or
+2. In the **Google Play Games** app: your profile → Settings → "Delete Play Games account and data" (choose Ashenstride); or
+3. In your **Google Account** (myaccount.google.com → Data & privacy → Third-party apps and services → Ashenstride).
+To remove everything stored on your phone, uninstall the app or use Android Settings → Apps → Ashenstride → Storage → "Clear data". You can also ask by e-mail (luis.baf0z@gmail.com) and we will help you.
+
 ### 6. Permissions
 Physical activity (step sensor), Health Connect steps (read only), notifications, vibration and **Internet (only for the optional cloud save and for purchases through Google Play)**. The app has no location, contacts, camera, microphone or storage permission.
 
@@ -72,6 +79,13 @@ Se escreveres para luis.baf0z@gmail.com, recebemos o teu endereço de e-mail e o
 - Desinstalar a app, ou Definições do Android → Aplicações → Ashenstride → Armazenamento → «Limpar dados», remove tudo o que a app guardou no teu telemóvel. Uma cópia na nuvem, se a fizeste, fica na tua conta Google até a apagares (Definições → Dados → «Apagar cópia da nuvem», app Google Play Games ou Conta Google).
 - Podes retirar as permissões de passos e notificações a qualquer momento nas definições do Android ou do Health Connect.
 - O programador não tem dados pessoais teus, por isso não há nada para apagar, corrigir ou exportar; para a cópia na nuvem usa as opções acima. Se achares que temos dados teus (por exemplo, de um e-mail que enviaste), escreve-nos e respondemos. Podes também apresentar queixa à autoridade de proteção de dados (em Portugal: CNPD, cnpd.pt).
+
+### Apagar os teus dados (Ashenstride, de Luis Barros)
+O programador não guarda dados pessoais teus. Os únicos dados que podem existir fora do teu telemóvel são a **cópia opcional na nuvem** do teu save, na **tua própria conta Google**. Para a apagar:
+1. No jogo: **Definições → Dados → «Apagar cópia da nuvem»**; ou
+2. Na app **Google Play Games**: o teu perfil → Definições → «Eliminar conta e dados do Play Games» (escolhe o Ashenstride); ou
+3. Na tua **Conta Google** (myaccount.google.com → Dados e privacidade → Apps e serviços de terceiros → Ashenstride).
+Para remover tudo o que está no teu telemóvel, desinstala a app ou usa Definições do Android → Aplicações → Ashenstride → Armazenamento → «Limpar dados». Também podes pedir por e-mail (luis.baf0z@gmail.com) e ajudamos-te.
 
 ### 6. Permissões
 Atividade física (sensor de passos), passos do Health Connect (só leitura), notificações, vibração e **Internet (só para a cópia opcional na nuvem e para as compras através da Google Play)**. A app não tem permissão de localização, contactos, câmara, microfone nem armazenamento.
