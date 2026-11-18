@@ -6,7 +6,7 @@
 
 ## English
 
-**Last updated:** 16 November 2026  
+**Last updated:** 18 November 2026  
 **Developer / controller:** Luis Barros (individual developer, Portugal) — contact: **luis.baf0z@gmail.com**
 
 **Summary.** Ashenstride has no account of its own, no ads and no usage analytics. Your progress and your steps stay on your phone. The game sends **anonymous crash and freeze reports** (Firebase Crashlytics, Google) so we can fix problems quickly; this is **on by default and you can switch it off at any time** in Settings → Data. Only if you turn on the optional "Cloud save" feature (by signing in with Google Play Games; off by default), the game uploads a copy of your game save to **your own Google account** through Google Play Games, so you can restore it on another phone. If you buy the optional in-game item, Google Play handles the payment. We, the developer, do not receive, see or store the cloud copy or your payment details, and we do not sell any of your data.
@@ -60,7 +60,7 @@ If this policy changes, the date above will be updated.
 
 ## Português (PT-PT)
 
-**Última atualização:** 16 de novembro de 2026  
+**Última atualização:** 18 de novembro de 2026  
 **Programador / responsável:** Luis Barros (programador individual, Portugal) — contacto: **luis.baf0z@gmail.com**
 
 **Resumo.** O Ashenstride não tem conta própria, anúncios nem estatísticas de utilização. O teu progresso e os teus passos ficam no teu telemóvel. O jogo envia **relatórios anónimos de falhas e bloqueios** (Firebase Crashlytics, da Google) para podermos corrigir problemas depressa; isto está **ligado por defeito e podes desligar a qualquer momento** em Definições → Dados. Só se ligares a função opcional «Cópia na nuvem» (ao entrares com o Google Play Jogos; desligada por defeito), o jogo envia uma cópia do teu save para **a tua própria conta Google**, através do Google Play Games, para a poderes recuperar noutro telemóvel. Se comprares o item opcional do jogo, é a Google Play que trata do pagamento. Nós, o programador, não recebemos, não vemos nem guardamos a cópia na nuvem nem os teus dados de pagamento, e não vendemos nenhum dado teu.
