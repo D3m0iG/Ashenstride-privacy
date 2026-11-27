@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       grupos:
-        description: 'Grupos a calcular, separados por vírgula (iberia,franca,benelux-alpes,alemanha,italia-balcas,uk-irlanda,centro-leste,nordicos-balticos,leste-grecia) ou "todos"'
+        description: 'Grupos a calcular, separados por vírgula (iberia,franca,...,leste-grecia,ilhas-atlanticas,africa-norte,africa-oeste,africa-centro-leste,africa-sul) ou "todos"'
         default: 'todos'
       max_km:
         description: 'Distância máxima de cada etapa em km (150 por omissão; 300 para zonas esparsas como o Norte)'
@@ -16,7 +16,7 @@ permissions:
   contents: write
 concurrency: etapas
 env:
-  TODOS: "PT ES AD FR MC BE NL LU CH LI AT DE IT SI HR BA RS ME AL MK XK MT GB IE PL CZ SK HU RO BG DK SE NO FI EE LV LT UA BY MD GR CY"
+  TODOS: "MA DZ TN LY EG MR SN GM GW GN SL LR CI GH TG BJ NG BF ML NE CV CM TD CF GA GQ CG CD AO SD SS ET ER DJ SO KE UG RW BI TZ ZM MW MZ ZW BW NA ZA LS SZ MG MU KM SC PT ES AD FR MC BE NL LU CH LI AT DE IT SI HR BA RS ME AL MK XK MT GB IE PL CZ SK HU RO BG DK SE NO FI EE LV LT UA BY MD GR CY"
 jobs:
   grupo:
     runs-on: ubuntu-latest
@@ -35,6 +35,11 @@ jobs:
           - { nome: centro-leste,     paises: "PL CZ SK HU RO BG",                 regioes: "europe/poland europe/czech-republic europe/slovakia europe/hungary europe/romania europe/bulgaria" }
           - { nome: nordicos-balticos, paises: "DK SE NO FI EE LV LT",             regioes: "europe/denmark europe/sweden europe/norway europe/finland europe/estonia europe/latvia europe/lithuania" }
           - { nome: leste-grecia,     paises: "UA BY MD GR CY",                    regioes: "europe/ukraine europe/belarus europe/moldova europe/greece europe/cyprus" }
+          - { nome: ilhas-atlanticas, paises: "PT ES",                         regioes: "europe/azores africa/canary-islands" }
+          - { nome: africa-norte,     paises: "MA DZ TN LY EG MR",                regioes: "africa/morocco africa/algeria africa/tunisia africa/libya africa/egypt africa/mauritania" }
+          - { nome: africa-oeste,     paises: "SN GM GW GN SL LR CI GH TG BJ NG BF ML NE CV", regioes: "africa/senegal-and-gambia africa/guinea-bissau africa/guinea africa/sierra-leone africa/liberia africa/ivory-coast africa/ghana africa/togo africa/benin africa/nigeria africa/burkina-faso africa/mali africa/niger africa/cape-verde" }
+          - { nome: africa-centro-leste, paises: "CM TD CF GA GQ CG CD AO SD SS ET ER DJ SO KE UG RW BI TZ", regioes: "africa/cameroon africa/chad africa/central-african-republic africa/gabon africa/equatorial-guinea africa/congo-brazzaville africa/congo-democratic-republic africa/angola africa/sudan africa/south-sudan africa/ethiopia africa/eritrea africa/djibouti africa/somalia africa/kenya africa/uganda africa/rwanda africa/burundi africa/tanzania" }
+          - { nome: africa-sul,       paises: "ZM MW MZ ZW BW NA ZA LS SZ MG MU KM SC", regioes: "africa/zambia africa/malawi africa/mozambique africa/zimbabwe africa/botswana africa/namibia africa/south-africa-and-lesotho africa/swaziland africa/madagascar africa/mauritius africa/comores africa/seychelles" }
     steps:
       - name: Decidir se este grupo corre
         id: dec
