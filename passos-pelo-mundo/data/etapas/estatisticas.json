@@ -1,7 +1,16 @@
 {
- "gerado": "2026-11-27 18:51 UTC",
+ "gerado": "2026-11-27 19:17 UTC",
  "ultimo_grupo": [
-  "DE"
+  "IT",
+  "SI",
+  "HR",
+  "BA",
+  "RS",
+  "ME",
+  "AL",
+  "MK",
+  "XK",
+  "MT"
  ],
  "modo": "local",
  "paises_no_grafo": [
@@ -49,31 +58,32 @@
   "CY"
  ],
  "nos": 7078,
- "etapas": 9433,
- "km_total": 212829,
- "bytes_desenho": 3448770,
+ "etapas": 11941,
+ "km_total": 294473,
+ "bytes_desenho": 4840810,
  "esta_corrida": {
-  "ok": 3275,
-  "barco": 16,
-  "desvio": 8
+  "ok": 2508,
+  "barco": 48,
+  "desvio": 8,
+  "erro": 2
  },
- "falhadas_total": 259,
+ "falhadas_total": 317,
  "componentes": [
   1542,
   1142,
+  811,
   478,
   106,
+  62,
   51,
+  16,
   11,
   11,
   8,
+  7,
   5,
   3,
-  3,
-  2,
-  2,
-  2,
-  1
+  3
  ],
  "grupos_isolados": [
   [
@@ -81,6 +91,12 @@
    "Zweibrücken",
    "Zülpich",
    "Zossen"
+  ],
+  [
+   "Sarandë",
+   "Pogradec",
+   "Librazhd",
+   "Kukes"
   ],
   [
    "Zwolle",
@@ -95,10 +111,22 @@
    "Winterthur"
   ],
   [
+   "Vittoria",
+   "Villabate",
+   "Trapani",
+   "Termini Imerese"
+  ],
+  [
    "Döbling",
    "Wiener Neustadt",
    "Viena",
    "Wetzelsdorf"
+  ],
+  [
+   "Sinnai",
+   "Sestu",
+   "Selargius",
+   "Quartu Sant'Elena"
   ],
   [
    "Son Rapinya",
@@ -119,6 +147,12 @@
    "Maspalomas"
   ],
   [
+   "Zabbar",
+   "Valeta",
+   "Sliema",
+   "San Pawl il-Bahar"
+  ],
+  [
    "São Martinho",
    "Santo António",
    "Funchal",
@@ -135,6 +169,11 @@
    "La Oliva"
   ],
   [
+   "Ischia Porto",
+   "Ischia",
+   "Forio"
+  ],
+  [
    "Santa Cruz de la Palma",
    "Los Llanos de Aridane"
   ],
@@ -147,5 +186,5 @@
    "Ajaccio"
   ]
  ],
- "segundos": 38
+ "segundos": 72
 }
