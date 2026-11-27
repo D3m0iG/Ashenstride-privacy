@@ -1,0 +1,36 @@
+{
+ "gerado": "2026-11-27 14:32 UTC",
+ "paises": [
+  "PT"
+ ],
+ "nos": 179,
+ "candidatas": 506,
+ "resultado": {
+  "barco": 19,
+  "ok": 485,
+  "desvio": 2
+ },
+ "etapas": 485,
+ "km_total": 11624,
+ "pontos": 53005,
+ "bytes_desenho": 219789,
+ "ficheiros": 15,
+ "componentes": [
+  173,
+  5,
+  1
+ ],
+ "grupos_isolados": [
+  [
+   "Funchal",
+   "Câmara de Lobos",
+   "São Martinho",
+   "Santo António",
+   "Caniço"
+  ],
+  [
+   "Ponta Delgada"
+  ]
+ ],
+ "segundos": 11
+}
