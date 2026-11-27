@@ -138,7 +138,8 @@ input[type=range]{width:100%;accent-color:var(--ink)}
 .mk-dest{width:18px;height:18px;border-radius:4px;background:var(--stamp);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);transform:rotate(45deg)}
 .mk-poi{font-family:var(--display);font-size:11.5px;font-weight:700;background:#fff;color:var(--ink);border-radius:9px;padding:2px 7px;box-shadow:0 1px 4px rgba(0,0,0,.3);white-space:nowrap}
 .mk-poi.locked{background:var(--ink);color:#fff;width:20px;height:20px;padding:0;border-radius:50%;text-align:center;line-height:20px}
-#map.far .mk-poi{display:none}
+#map.far .mk-poi,#map.far .mk-poi.locked{font-size:0;line-height:0;width:9px;height:9px;padding:0;border-radius:50%;background:var(--ink);border:2px solid #fff}
+#map.far .mk-poi:not(.locked){background:var(--trail)}
 #map.mid .mk-poi:not(.locked){width:12px;height:12px;padding:0;border-radius:50%;background:var(--trail);border:2px solid #fff;font-size:0;line-height:0}
 
 #stampfx{position:absolute;z-index:11;inset:0;display:grid;place-items:center;pointer-events:none}
@@ -219,6 +220,7 @@ var CFG = {
   valhallaUrl: 'https://valhalla1.openstreetmap.de/route',          // servidor de demonstração (FOSSGIS)
   graphhopperUrl: 'https://graphhopper.com/api/1/route',            // precisa de chave
   countriesUrl: 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json', // Natural Earth 1:50m
+  dataBase: 'data/',      // cidades.json e monumentos.json (GeoNames e Wikidata)
   saveKey: 'passos-mundo-proto-v1',
   cityRadiusM: 3000,      // distância a que uma cidade fica descoberta
   monumentRadiusM: 2000,  // idem para monumentos
@@ -331,7 +333,7 @@ pt: {
   toCountries:'Sem dados de fronteiras: os países só são detetados à chegada.',
   passTitle:'Passaporte', passCount:'de 195 países', passLead:'Cada país onde entras fica com um selo permanente. As fronteiras são detetadas pelo caminho, sem GPS.', entry:'Entrada',
   collTitle:'Coleções', cities:'Cidades', capitals:'Capitais', monuments:'Monumentos', locked:'Por descobrir',
-  collLead:'Neste protótipo há apenas alguns lugares de exemplo. Ficam descobertos quando o caminho passa perto.',
+  collLead:'Cidades, capitais e monumentos de todo o mundo. Ficam descobertos quando o caminho passa perto.', andMore:'e mais {n} países',
   diaryTitle:'Diário de exploração', stSteps:'passos dados', stKm:'km percorridos', stCountries:'países', stTrips:'viagens concluídas',
   trips:'Viagens', noTrips:'Ainda não concluíste nenhuma viagem.', events:'Descobertas', noEvents:'As tuas descobertas aparecem aqui.',
   partial:'interrompida', evCountry:'País: {name}', evCity:'Cidade: {name}', evCapital:'Capital: {name}', evMonument:'Monumento: {name}',
@@ -343,7 +345,8 @@ pt: {
   crMap:'Mapa desenhado com MapLibre GL JS (licença BSD de 3 cláusulas).',
   crTiles:'Tiles: OpenFreeMap © OpenMapTiles. Dados © contribuidores do OpenStreetMap, licença ODbL.',
   crRoute:'Percursos pedonais: Valhalla (MIT) no servidor de demonstração da FOSSGIS, ou GraphHopper (Apache 2.0). Dados OpenStreetMap.',
-  crBorders:'Fronteiras: Natural Earth, domínio público, através do pacote world-atlas.'
+  crBorders:'Fronteiras: Natural Earth, domínio público, através do pacote world-atlas.',
+  crPlaces:'Cidades: GeoNames, licença CC BY 4.0. Monumentos: Wikidata, CC0.'
 },
 en: {
   appTitle:'Steps Around the World', steps:'steps', tabMap:'Map', tabPassport:'Passport', tabCollections:'Collections', tabDiary:'Journal',
@@ -369,7 +372,7 @@ en: {
   toCountries:'No border data: countries are only detected on arrival.',
   passTitle:'Passport', passCount:'of 195 countries', passLead:'Every country you enter gets a permanent stamp. Borders are detected along the path, without GPS.', entry:'Entry',
   collTitle:'Collections', cities:'Cities', capitals:'Capitals', monuments:'Monuments', locked:'Not discovered yet',
-  collLead:'This prototype only has a few sample places. They are discovered when your path passes nearby.',
+  collLead:'Cities, capitals and monuments from all over the world. They are discovered when your path passes nearby.', andMore:'and {n} more countries',
   diaryTitle:'Exploration journal', stSteps:'steps taken', stKm:'km travelled', stCountries:'countries', stTrips:'trips completed',
   trips:'Trips', noTrips:'You have not completed a trip yet.', events:'Discoveries', noEvents:'Your discoveries will show up here.',
   partial:'interrupted', evCountry:'Country: {name}', evCity:'City: {name}', evCapital:'Capital: {name}', evMonument:'Monument: {name}',
@@ -381,7 +384,8 @@ en: {
   crMap:'Map drawn with MapLibre GL JS (3-clause BSD licence).',
   crTiles:'Tiles: OpenFreeMap © OpenMapTiles. Data © OpenStreetMap contributors, ODbL licence.',
   crRoute:'Walking routes: Valhalla (MIT) on the FOSSGIS demo server, or GraphHopper (Apache 2.0). OpenStreetMap data.',
-  crBorders:'Borders: Natural Earth, public domain, through the world-atlas package.'
+  crBorders:'Borders: Natural Earth, public domain, through the world-atlas package.',
+  crPlaces:'Cities: GeoNames, CC BY 4.0 licence. Monuments: Wikidata, CC0.'
 }
 };
 
@@ -526,7 +530,47 @@ function km(m) { return new Intl.NumberFormat(locale(), { minimumFractionDigits:
 function dec(n, d) { return new Intl.NumberFormat(locale(), { minimumFractionDigits: d, maximumFractionDigits: d }).format(n); }
 function dateStr(ts) { try { return new Date(ts).toLocaleDateString(locale(), { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }
 function cityById(id) { for (var i = 0; i < CITIES.length; i++) if (CITIES[i].id === id) return CITIES[i]; return null; }
-function placeById(id) { var c = cityById(id); if (c) return c; for (var i = 0; i < POIS.length; i++) if (POIS[i].id === id) return POIS[i]; return null; }
+var POI_BY_ID = {}, POI_GRID = {}, POI_SORTED = [];
+function mzOf(q) {
+  if (q.hand) return q.capital ? 3 : 6;
+  if (q.kind === 'city') { if (q.capital) return 3; var p = q.w; return p >= 1e6 ? 4 : p >= 3e5 ? 6 : p >= 1e5 ? 8 : p >= 3e4 ? 9.5 : 11; }
+  var sl = q.w / 1000; return sl >= 150 ? 5 : sl >= 80 ? 7 : sl >= 40 ? 9 : 10.5;
+}
+function indexPois() {
+  POI_BY_ID = {}; POI_GRID = {};
+  POIS.forEach(function (q) {
+    if (q.w === undefined) { q.hand = true; q.w = 2e12; }
+    q.mz = mzOf(q); POI_BY_ID[q.id] = q;
+    var k = Math.floor(q.p[0]) + ',' + Math.floor(q.p[1]); (POI_GRID[k] || (POI_GRID[k] = [])).push(q);
+  });
+  POI_SORTED = POIS.slice().sort(function (a, b) { return b.w - a.w; });
+}
+function placeById(id) { var c = cityById(id); if (c) return c; return POI_BY_ID[id] || null; }
+function nearPois(p) {
+  var cx = Math.floor(p[0]), cy = Math.floor(p[1]), out = [];
+  for (var dx = -1; dx <= 1; dx++) for (var dy = -1; dy <= 1; dy++) { var a = POI_GRID[(cx + dx) + ',' + (cy + dy)]; if (a) for (var i = 0; i < a.length; i++) out.push(a[i]); }
+  return out;
+}
+/* Junta as listas mundiais (formato compacto de data/*.json) aos pontos escritos à mão. */
+function addWorld(cities, mons) {
+  var hand = POIS.filter(function (q) { return q.hand; }), add = [];
+  function near(q, kind, maxM) { for (var i = 0; i < hand.length; i++) if (hand[i].kind === kind && hav(hand[i].p, q.p) < maxM) return true; return false; }
+  (cities || []).forEach(function (r) {
+    var q = { id: 'g' + r[0], kind: 'city', capital: !!r[7], pt: r[1], en: r[2], cc: r[3], p: [r[4], r[5]], w: r[6] + (r[7] ? 1e9 : 0) };
+    if (!near(q, 'city', 8000)) add.push(q);
+  });
+  (mons || []).forEach(function (r) {
+    var q = { id: 'w' + r[0], kind: 'monument', pt: r[1], en: r[2], cc: r[3], p: [r[4], r[5]], w: r[6] * 1000 };
+    if (!near(q, 'monument', 600)) add.push(q);
+  });
+  add.forEach(function (q) { POIS.push(q); });
+  indexPois();
+  syncVisible(); renderAll();
+}
+function loadWorld() {
+  function get(n) { return fetch(CFG.dataBase + n).then(function (r) { if (!r.ok) throw new Error(n); return r.json(); }); }
+  Promise.all([get('cidades.json'), get('monumentos.json')]).then(function (d) { addWorld(d[0], d[1]); }, function () { /* sem dados mundiais: ficam os pontos de exemplo */ });
+}
 function placeName(o) { return (S.lang === 'en' && o.en) ? o.en : o.pt; }
 var dnCache = {};
 function countryName(cc) {
@@ -569,8 +613,9 @@ function detect(p) {
     var f = countryAt(p[0], p[1]);
     if (f && f.iso2 && f.iso2 !== S.pos.country) enterCountry(f.iso2);
   }
-  for (var i = 0; i < POIS.length; i++) {
-    var q = POIS[i], store = q.kind === 'city' ? S.cities : S.monuments;
+  var near = nearPois(p);
+  for (var i = 0; i < near.length; i++) {
+    var q = near[i], store = q.kind === 'city' ? S.cities : S.monuments;
     if (store[q.id]) continue;
     if (hav(p, q.p) <= (q.kind === 'city' ? CFG.cityRadiusM : CFG.monumentRadiusM)) discoverPoi(q);
   }
@@ -730,7 +775,7 @@ function initMap() {
 
     fogCanvas = document.createElement('canvas'); fogCanvas.id = 'fog';
     var cv = map.getCanvas(); cv.parentNode.insertBefore(fogCanvas, cv.nextSibling);
-    POIS.forEach(function (q) { var e = markerEl('mk-poi', 1); e.outer.style.cursor = 'pointer'; e.outer.addEventListener('click', function (ev) { ev.stopPropagation(); openPoi(q); }); poiMk[q.id] = { el: e.inner, mk: new maplibregl.Marker({ element: e.outer }).setLngLat(q.p).addTo(map) }; syncPoiMarker(q); });
+    map.on('moveend', syncVisible); syncVisible();
     destMk = new maplibregl.Marker({ element: markerEl('mk-dest', 2).outer }).setLngLat(start);
     player = new maplibregl.Marker({ element: markerEl('mk-player', 3).outer }).setLngLat(start);
     map.on('move', drawFog); map.on('resize', drawFog);
@@ -744,6 +789,28 @@ function initMap() {
 function markerEl(cls, z) { var outer = document.createElement('div'), inner = document.createElement('div'); inner.className = cls; outer.appendChild(inner); outer.style.zIndex = String(z); return { outer: outer, inner: inner }; }
 function mapFail() { var m = el('mapmsg'); m.textContent = t('mapFail'); m.hidden = false; }
 function zoomClass() { if (!map) return; var z = map.getZoom(), c = el('map').classList; c.toggle('far', z < 8.5); c.toggle('mid', z >= 8.5 && z < 11.5); }
+function syncVisible() {
+  if (!mapReady) return;
+  var b = map.getBounds(), z = map.getZoom(), w = b.getWest(), e = b.getEast(), so = b.getSouth(), n = b.getNorth();
+  var padX = (e - w) * 0.1, padY = (n - so) * 0.1; w -= padX; e += padX; so -= padY; n += padY;
+  var want = {}, cnt = 0;
+  for (var i = 0; i < POI_SORTED.length && cnt < 140; i++) {
+    var q = POI_SORTED[i];
+    if (z < q.mz) continue;
+    var x = q.p[0], y = q.p[1];
+    if (y < so || y > n || x < w || x > e) continue;
+    want[q.id] = q; cnt++;
+  }
+  Object.keys(poiMk).forEach(function (id) { if (!want[id]) { poiMk[id].mk.remove(); delete poiMk[id]; } });
+  Object.keys(want).forEach(function (id) {
+    if (poiMk[id]) return;
+    var q = want[id], el2 = markerEl('mk-poi', 1);
+    el2.outer.style.cursor = 'pointer';
+    el2.outer.addEventListener('click', function (ev) { ev.stopPropagation(); openPoi(q); });
+    poiMk[id] = { el: el2.inner, mk: new maplibregl.Marker({ element: el2.outer }).setLngLat(q.p).addTo(map) };
+    syncPoiMarker(q);
+  });
+}
 function syncPoiMarker(q) {
   var m = poiMk[q.id]; if (!m) return;
   var found = (q.kind === 'city' ? S.cities : S.monuments)[q.id];
@@ -844,7 +911,7 @@ function renderStatic() {
   el('btnFog').setAttribute('aria-pressed', S.settings.fog ? 'true' : 'false');
   el('sheetClose').setAttribute('aria-label', t('aClose'));
   renderAuto();
-  POIS.forEach(syncPoiMarker);
+  Object.keys(poiMk).forEach(function (id) { if (POI_BY_ID[id]) syncPoiMarker(POI_BY_ID[id]); });
 }
 function renderAuto() {
   var on = !!autoTimer;
@@ -933,7 +1000,8 @@ function collSection(titleKey, list, store) {
   if (missing.length) {
     var by = {}, order = [];
     missing.forEach(function (q) { if (!by[q.cc]) { by[q.cc] = 0; order.push(q.cc); } by[q.cc]++; });
-    h += '<li class="locked"><span>' + esc(t('locked')) + '</span><span class="meta">' + esc(order.map(function (cc) { return countryName(cc) + ' ' + by[cc]; }).join(', ')) + '</span></li>';
+    order = order.filter(function (cc) { return cc; }).sort(function (a, b) { return by[b] - by[a]; }); var top = order.slice(0, 6), more = order.length - top.length;
+    h += '<li class="locked"><span>' + esc(t('locked')) + '</span><span class="meta">' + esc(top.map(function (cc) { return countryName(cc) + ' ' + nf(by[cc]); }).join(', ') + (more > 0 ? ' ' + t('andMore', { n: nf(more) }) : '')) + '</span></li>';
   }
   return h + '</ul>';
 }
@@ -955,7 +1023,7 @@ function diaryHtml() {
   h += '<h3>' + esc(t('events')) + '</h3>';
   if (!S.log.length) h += '<p class="note">' + esc(t('noEvents')) + '</p>';
   else { h += '<ul class="items">'; S.log.slice().reverse().slice(0, 60).forEach(function (e) {
-    var name = e.k === 'country' ? countryName(e.id) : (function () { for (var i = 0; i < POIS.length; i++) if (POIS[i].id === e.id) return placeName(POIS[i]); return e.id; })();
+    var name = e.k === 'country' ? countryName(e.id) : (function () { var q = POI_BY_ID[e.id]; return q ? placeName(q) : e.id; })();
     var key = e.k === 'country' ? 'evCountry' : e.k === 'capital' ? 'evCapital' : e.k === 'city' ? 'evCity' : 'evMonument';
     h += '<li><span>' + esc(t(key, { name: name })) + '</span><time>' + esc(dateStr(e.t)) + '</time></li>'; }); h += '</ul>'; }
   return h + '</div>';
@@ -971,7 +1039,7 @@ function settingsHtml() {
   h += '<label class="field"><span>' + esc(t('lang')) + '</span><select id="inLang"><option value="pt"' + (S.lang === 'pt' ? ' selected' : '') + '>Português</option><option value="en"' + (S.lang === 'en' ? ' selected' : '') + '>English</option></select></label>';
   h += '<div class="coll"><h3>' + esc(t('credits')) + '</h3><ul class="credits"><li>' + esc(t('crMap')) + ' <a href="https://maplibre.org" target="_blank" rel="noopener">maplibre.org</a></li>' +
     '<li>' + esc(t('crTiles')) + ' <a href="https://openfreemap.org" target="_blank" rel="noopener">openfreemap.org</a>, <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">openstreetmap.org/copyright</a></li>' +
-    '<li>' + esc(t('crRoute')) + '</li><li>' + esc(t('crBorders')) + '</li></ul></div>';
+    '<li>' + esc(t('crRoute')) + '</li><li>' + esc(t('crBorders')) + '</li><li>' + esc(t('crPlaces')) + ' <a href="https://www.geonames.org" target="_blank" rel="noopener">geonames.org</a></li></ul></div>';
   h += '<button type="button" class="btn ' + (resetArmed ? 'danger' : 'alt') + '" id="btnReset">' + esc(t(resetArmed ? 'resetConfirm' : 'reset')) + '</button>';
   return h;
 }
@@ -1052,7 +1120,7 @@ function openPoi(q) {
   var here = S.pos ? S.pos.pt : null, d = here ? hav(here, q.p) : null, hereAlready = d !== null && d < 150;
   var kind = q.kind === 'city' ? (q.capital ? t('kCapital') : t('kCity')) : t('kMonument');
   var h = '<h2>' + esc(found ? placeName(q) : t('undiscovered')) + '</h2>';
-  h += '<p class="note">' + esc(kind + ' · ' + countryName(q.cc)) + (d !== null && !hereAlready ? ' · ' + esc(t('straight', { km: km(d) })) : '') + '</p>';
+  h += '<p class="note">' + esc(kind + (q.cc ? ' · ' + countryName(q.cc) : '')) + (d !== null && !hereAlready ? ' · ' + esc(t('straight', { km: km(d) })) : '') + '</p>';
   if (!found) h += '<p class="note">' + esc(t('poiHint')) + '</p>';
   if (hereAlready) h += '<p class="note">' + esc(t('alreadyHere')) + '</p>';
   else h += '<button type="button" class="btn go" id="poiGo">' + esc(t('goThere')) + '</button>';
@@ -1087,7 +1155,7 @@ function toggleAuto() {
    12. ARRANQUE
    ===================================================================== */
 function boot() {
-  S = loadState();
+  S = loadState(); indexPois();
   if (S.trip) { ROUTE = loadRoute(); if (!ROUTE) S.trip = null; else { S.trip.totalM = ROUTE.total; S.trip.doneM = Math.min(S.trip.doneM, ROUTE.total); walkedFog = decimate(sliceRoute(ROUTE, 0, S.trip.doneM), 120); } }
   var adds = document.querySelectorAll('[data-add]');
   for (var i = 0; i < adds.length; i++) adds[i].onclick = function () { addSteps(Number(this.getAttribute('data-add'))); };
@@ -1107,11 +1175,12 @@ function boot() {
   renderAll();
   initMap();
   loadCountries();
+  loadWorld();
   if (!S.pos) openPlanner();
 }
 window.__passos = { state: function () { return S; }, route: function () { return ROUTE; }, addSteps: addSteps,
   geo: { hav: hav, decodePolyline: decodePolyline, buildRoute: buildRoute, locate: locate, sliceRoute: sliceRoute, decimate: decimate, geomContains: geomContains },
-  iso: A2, n3: N3_TO_A2, offline: OFFLINE_LIS_STR, cities: CITIES, pois: POIS, cfg: CFG };
+  iso: A2, n3: N3_TO_A2, offline: OFFLINE_LIS_STR, cities: CITIES, pois: POIS, cfg: CFG, addWorld: addWorld, nearPois: nearPois };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
 </script>
