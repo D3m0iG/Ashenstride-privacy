@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 300
     env:
-      REGIOES: "europe/portugal"
-      PAISES: "PT"
+      REGIOES: "europe/portugal europe/spain europe/andorra"
+      PAISES: "PT ES AD"
       IMG: ghcr.io/valhalla/valhalla:latest
     steps:
       - uses: actions/checkout@v4
