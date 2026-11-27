@@ -1,7 +1,14 @@
 {
- "gerado": "2026-11-27 20:44 UTC",
- "ultimo_grupo": [],
- "modo": "demo",
+ "gerado": "2026-11-27 23:02 UTC",
+ "ultimo_grupo": [
+  "PL",
+  "CZ",
+  "SK",
+  "HU",
+  "RO",
+  "BG"
+ ],
+ "modo": "local",
  "paises_no_grafo": [
   "PT",
   "ES",
@@ -47,14 +54,11 @@
   "CY"
  ],
  "nos": 7078,
- "etapas": 20112,
- "km_total": 587756,
- "bytes_desenho": 8562855,
+ "etapas": 20113,
+ "km_total": 587971,
+ "bytes_desenho": 8565624,
  "esta_corrida": {
-  "ok": 496,
-  "erro": 98,
-  "barco": 32,
-  "desvio": 10
+  "ok": 1
  },
  "falhadas_total": 638,
  "componentes": [
@@ -205,5 +209,5 @@
    "Bodø"
   ]
  ],
- "segundos": 632
+ "segundos": 0
 }
