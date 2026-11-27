@@ -40,6 +40,7 @@ jobs:
           if [ "$G" = "todos" ] || echo ",$G," | grep -q ",${{ matrix.nome }},"; then echo run=1 >> $GITHUB_OUTPUT; else echo run=0 >> $GITHUB_OUTPUT; fi
       - if: steps.dec.outputs.run == '1'
         uses: actions/checkout@v4
+        with: { ref: main }
       - if: steps.dec.outputs.run == '1'
         uses: actions/setup-python@v5
         with: { python-version: '3.12' }
@@ -91,6 +92,7 @@ jobs:
     timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
+        with: { ref: main }
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install numpy scipy
