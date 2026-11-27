@@ -5,6 +5,9 @@ on:
       grupos:
         description: 'Grupos a calcular, separados por vírgula (iberia,franca,benelux-alpes,alemanha,italia-balcas,uk-irlanda,centro-leste,nordicos-balticos,leste-grecia) ou "todos"'
         default: 'todos'
+      max_km:
+        description: 'Distância máxima de cada etapa em km (150 por omissão; 300 para zonas esparsas como o Norte)'
+        default: '150'
       fronteiras:
         description: 'Calcular no fim as ligações entre grupos (servidor de demonstração)'
         type: boolean
@@ -74,6 +77,7 @@ jobs:
         env:
           PAISES: ${{ matrix.paises }}
           MODO: local
+          MAX_KM: ${{ inputs.max_km }}
         run: python passos-pelo-mundo/tools/build_stages.py
       - name: Guardar no repositório
         if: steps.dec.outputs.run == '1'
@@ -100,6 +104,7 @@ jobs:
         env:
           PAISES: ""
           MODO: demo
+          MAX_KM: ${{ inputs.max_km }}
         run: python passos-pelo-mundo/tools/build_stages.py
       - name: Guardar no repositório
         run: |

@@ -26,6 +26,7 @@ URL = os.environ.get('VALHALLA', 'https://valhalla1.openstreetmap.de' if MODO ==
 PAISES = os.environ.get('PAISES', 'PT').split()
 TODOS = os.environ.get('TODOS', os.environ.get('PAISES', 'PT')).split()
 MAX_M = float(os.environ.get('MAX_KM', '150')) * 1000
+if MODO == 'demo': MAX_M = min(MAX_M, 240000.0)  # limite do servidor de demonstração
 TOL_M = float(os.environ.get('TOL_M', '15'))
 os.makedirs(OUT, exist_ok=True)
 
