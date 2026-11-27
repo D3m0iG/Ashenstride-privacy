@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17233F">
+<title>Passos pelo Mundo, protótipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=B612+Mono:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+:root{
+  --ink:#17233F; --ink-2:#24355E; --paper:#F2F5F1; --rule:rgba(23,35,63,.16);
+  --muted:#586581; --trail:#F2B705; --route:#2F6FED; --stamp:#C2274B; --moss:#237A57;
+  --display:'Bricolage Grotesque','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+  --mono:'B612 Mono',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{height:100vh;height:100dvh}
+button,select,input,a{touch-action:manipulation}
+body{display:flex;flex-direction:column;font-family:var(--display);color:var(--ink);background:var(--ink);overflow:hidden;-webkit-tap-highlight-color:transparent}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--trail);outline-offset:2px}
+svg.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+#stage{position:relative;flex:1;min-height:0;overflow:hidden;background:#cfd8e3}
+#map{position:absolute;inset:0}
+#mapmsg{position:absolute;inset:0;display:grid;place-items:center;padding:150px 28px 40px;text-align:center;color:var(--ink);font-size:16px;line-height:1.45}
+#mapmsg[hidden]{display:none}
+#fog{position:absolute;left:0;top:0;pointer-events:none}
+
+/* HUD: a linha da viagem */
+#hud{position:absolute;z-index:5;top:calc(8px + env(safe-area-inset-top,0px));left:8px;right:8px;max-width:470px;background:var(--ink);color:#fff;border-radius:14px;padding:10px 12px 9px;box-shadow:0 6px 20px rgba(10,18,40,.35)}
+.hud-ends{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-weight:700;font-size:17px;line-height:1.15}
+.hud-ends span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hud-ends .to{text-align:right}
+.track{position:relative;height:18px;margin:5px 8px 3px}
+.track::before{content:'';position:absolute;left:0;right:0;top:8px;border-top:2px dashed rgba(255,255,255,.34)}
+.track .fill{position:absolute;left:0;top:7px;height:4px;width:0;border-radius:2px;background:var(--trail)}
+.track .dot{position:absolute;top:1px;left:0;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:var(--trail);border:3px solid #fff}
+.hud-nums{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:rgba(255,255,255,.84);font-variant-numeric:tabular-nums}
+.hud-foot{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:13.5px;font-variant-numeric:tabular-nums}
+.hud-foot .msg{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hud-foot .chip{font-family:var(--mono);font-size:12px;background:var(--ink-2);border-radius:8px;padding:5px 8px;white-space:nowrap}
+.hud-foot button{border:0;background:var(--ink-2);color:#fff;border-radius:9px;width:36px;height:32px;display:grid;place-items:center;padding:0}
+.hud-foot button svg.ic{width:19px;height:19px}
+
+.mapbtns{position:absolute;z-index:4;right:10px;bottom:112px;display:flex;flex-direction:column;gap:8px}
+.mapbtns button{width:42px;height:42px;border-radius:12px;border:0;background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(10,18,40,.3);display:grid;place-items:center;padding:0}
+.mapbtns button[aria-pressed=true]{background:var(--ink);color:var(--trail)}
+
+#toasts{position:absolute;z-index:9;left:0;right:0;bottom:40px;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;padding:0 12px}
+.toast{background:var(--ink);color:#fff;border-radius:999px;padding:8px 15px;font-size:14px;box-shadow:0 4px 14px rgba(10,18,40,.35);max-width:100%;text-align:center}
+.toast b{color:var(--trail);font-weight:700}
+
+/* Doca dos passos */
+#dock{flex:none;background:var(--ink);color:#fff;padding:8px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+.steps{display:grid;grid-template-columns:1fr 1fr 1fr 1.2fr;gap:6px;max-width:560px;margin:0 auto}
+.steps button{border:0;border-radius:12px;background:var(--ink-2);color:#fff;padding:8px 4px 7px;line-height:1.1;min-height:50px}
+.steps button b{display:block;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.steps button small{font-size:12px;color:rgba(255,255,255,.72)}
+.steps .auto{background:var(--trail);color:var(--ink)}
+.steps .auto small{color:rgba(23,35,63,.78)}
+.steps .auto[aria-pressed=true]{background:#fff}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);max-width:560px;margin:6px auto 0}
+.tabs button{position:relative;border:0;background:none;color:rgba(255,255,255,.66);padding:6px 2px 4px;font-size:12.5px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabs button[aria-selected=true]{color:#fff}
+.tabs button[aria-selected=true] svg.ic{color:var(--trail)}
+.tabs .badge{position:absolute;top:3px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--stamp);border:2px solid var(--ink)}
+.tabs .badge[hidden]{display:none}
+
+/* Folhas */
+.sheet{position:absolute;z-index:8;left:0;right:0;bottom:0;max-height:84%;display:flex;flex-direction:column;background:var(--paper);border-radius:18px 18px 0 0;box-shadow:0 -10px 30px rgba(10,18,40,.3);transform:translateY(104%);visibility:hidden;transition:transform .22s ease,visibility 0s .22s}
+.sheet.open{transform:none;visibility:visible;transition:transform .22s ease}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 12px 8px 16px}
+.sheet-head h2{margin:0;font-size:23px;font-weight:800;letter-spacing:-.01em}
+.sheet-head button{border:0;background:none;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:var(--ink)}
+.sheet-body{overflow:auto;padding:4px 16px 22px;-webkit-overflow-scrolling:touch}
+.sheet-body.guilloche{background-image:repeating-radial-gradient(circle at 18% 8%,rgba(35,122,87,.07) 0 1px,transparent 1px 9px)}
+@media (min-width:900px){
+  .sheet{left:auto;top:12px;right:12px;bottom:12px;width:410px;max-height:none;border-radius:18px;transform:translateX(112%)}
+}
+
+.lead{font-size:14px;color:var(--muted);line-height:1.45;margin:0 0 12px}
+.passport-top{background:var(--ink);color:#fff;border-radius:14px;padding:14px 14px 12px;margin-bottom:16px;overflow:hidden}
+.passport-top .big{font-size:36px;font-weight:800;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.passport-top .sub{font-size:14px;color:rgba(255,255,255,.82);margin-top:4px}
+.mrz{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:rgba(255,255,255,.66);margin-top:12px;white-space:nowrap;overflow:hidden}
+.stamps{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px 10px}
+.slot{aspect-ratio:1.18;border:1.5px dashed var(--rule);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px;font-size:12px;line-height:1.2;color:var(--muted)}
+.stamp{--inkc:var(--stamp);aspect-ratio:1.18;border:2.5px solid var(--inkc);border-radius:12px;outline:1.5px solid var(--inkc);outline-offset:-7px;color:var(--inkc);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:9px;text-align:center;transform:rotate(var(--rot,-4deg));font-family:var(--mono);text-transform:uppercase;line-height:1.15;background:rgba(255,255,255,.42)}
+.stamp .code{font-size:22px;font-weight:700;letter-spacing:.05em}
+.stamp .nm{font-size:10px;font-weight:700;overflow-wrap:anywhere}
+.stamp .dt{font-size:9.5px}
+
+.coll h3{display:flex;justify-content:space-between;align-items:baseline;font-size:17px;font-weight:700;margin:18px 0 8px}
+.coll h3:first-child{margin-top:4px}
+.coll h3 span{font-size:13px;color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+.items{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.items li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 2px;border-bottom:1px solid var(--rule);font-size:15px}
+.items li.locked{color:var(--muted)}
+.items li time,.items li .meta{font-size:12.5px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.stats div{background:#fff;border:1.5px solid var(--rule);border-radius:12px;padding:10px 12px}
+.stats b{display:block;font-size:22px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.stats span{font-size:13px;color:var(--muted)}
+
+.field{display:block;margin:14px 0}
+.field>span{display:block;font-size:13.5px;color:var(--muted);margin-bottom:5px}
+.field output{float:right;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+select,input[type=text]{width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid var(--rule);background:#fff;font-size:16px}
+input[type=range]{width:100%;accent-color:var(--ink)}
+.fixed{padding:11px 12px;border-radius:10px;border:1.5px solid var(--rule);background:rgba(255,255,255,.5);font-size:16px}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:13px 14px;font-weight:700;font-size:16px;background:var(--ink);color:#fff;margin-top:10px}
+.btn.alt{background:none;color:var(--ink);border:1.5px solid var(--rule)}
+.btn.go{background:var(--trail);color:var(--ink)}
+.btn.danger{background:var(--stamp)}
+.btn[disabled]{opacity:.55;cursor:default}
+.note{font-size:13.5px;color:var(--muted);line-height:1.45;margin:8px 0}
+.note.warn{color:#7a4300}
+.sum{background:#fff;border:1.5px solid var(--rule);border-radius:12px;padding:12px 14px;margin:12px 0 4px}
+.sum strong{display:block;font-size:24px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.sum span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.credits{font-size:13.5px;line-height:1.5;color:var(--ink);padding-left:18px;margin:6px 0}
+.credits a{color:var(--route)}
+
+.modal{position:absolute;z-index:12;inset:0;background:rgba(15,22,44,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px}
+.modal[hidden]{display:none}
+.card{width:100%;max-width:440px;max-height:94%;overflow:auto;background:var(--paper);border-radius:18px;padding:18px 18px 16px;box-shadow:0 20px 50px rgba(10,18,40,.45)}
+.card h2{margin:0 0 6px;font-size:25px;font-weight:800;letter-spacing:-.015em;line-height:1.1}
+@media (min-width:700px){.modal{align-items:center}}
+
+.mk-player{width:26px;height:26px;border-radius:50%;background:var(--trail);border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.mk-dest{width:18px;height:18px;border-radius:4px;background:var(--stamp);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);transform:rotate(45deg)}
+.mk-poi{font-family:var(--display);font-size:11.5px;font-weight:700;background:#fff;color:var(--ink);border-radius:9px;padding:2px 7px;box-shadow:0 1px 4px rgba(0,0,0,.3);white-space:nowrap}
+.mk-poi.locked{background:var(--ink);color:#fff;width:20px;height:20px;padding:0;border-radius:50%;text-align:center;line-height:20px}
+#map.far .mk-poi{display:none}
+#map.mid .mk-poi:not(.locked){width:12px;height:12px;padding:0;border-radius:50%;background:var(--trail);border:2px solid #fff;font-size:0;line-height:0}
+
+#stampfx{position:absolute;z-index:11;inset:0;display:grid;place-items:center;pointer-events:none}
+#stampfx[hidden]{display:none}
+#stampfx .stamp{width:210px;background:rgba(242,245,241,.94);box-shadow:0 12px 40px rgba(10,18,40,.35);animation:thunk 2.6s ease forwards}
+#stampfx .stamp .code{font-size:44px}
+#stampfx .stamp .nm{font-size:14px}
+#stampfx .stamp .dt{font-size:12px}
+@keyframes thunk{0%{transform:scale(2.3) rotate(-15deg);opacity:0}10%{transform:scale(1) rotate(-7deg);opacity:1}82%{transform:scale(1) rotate(-7deg);opacity:1}100%{transform:scale(.92) rotate(-7deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){
+  .sheet,.sheet.open{transition:none}
+  #stampfx .stamp{animation:fadeonly 2.6s linear forwards}
+  @keyframes fadeonly{0%,85%{opacity:1}100%{opacity:0}}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="map"></div>
+  <div id="mapmsg" hidden></div>
+
+  <header id="hud">
+    <div class="hud-ends"><span class="from" id="hudFrom"></span><span class="to" id="hudTo"></span></div>
+    <div class="track" id="hudTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="fill" id="hudFill"></div><div class="dot" id="hudDot"></div></div>
+    <div class="hud-nums"><span id="hudL"></span><span id="hudR"></span></div>
+    <div class="hud-foot">
+      <span class="msg" id="hudMsg"></span>
+      <span class="chip" id="hudChip"></span>
+      <button type="button" id="btnPlan"><svg class="ic" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg></button>
+      <button type="button" id="btnSettings"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></button>
+    </div>
+  </header>
+
+  <div class="mapbtns">
+    <button type="button" id="btnWorld"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg></button>
+    <button type="button" id="btnFollow" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+    <button type="button" id="btnFog" aria-pressed="true"><svg class="ic" viewBox="0 0 24 24"><path d="M7 15a4 4 0 0 1 .6-7.96A5.5 5.5 0 0 1 18.2 9 3.2 3.2 0 0 1 17.5 15z"/><path d="M5 19h10M9 22h10"/></svg></button>
+  </div>
+
+  <div id="toasts" aria-live="polite"></div>
+
+  <section id="sheet" class="sheet" aria-hidden="true">
+    <div class="sheet-head"><h2 id="sheetTitle"></h2><button type="button" id="sheetClose"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </section>
+
+  <div id="modal" class="modal" hidden><div class="card" id="card" role="dialog" aria-modal="true"></div></div>
+  <div id="stampfx" hidden></div>
+</div>
+
+<footer id="dock">
+  <div class="steps">
+    <button type="button" data-add="100"><b>+100</b><small data-t="steps"></small></button>
+    <button type="button" data-add="1000"><b id="lbl1k"></b><small data-t="steps"></small></button>
+    <button type="button" data-add="10000"><b id="lbl10k"></b><small data-t="steps"></small></button>
+    <button type="button" class="auto" id="btnAuto" aria-pressed="false"><b id="autoLbl"></b><small id="autoSub"></small></button>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button type="button" role="tab" data-tab="map" aria-selected="true"><svg class="ic" viewBox="0 0 24 24"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span data-t="tabMap"></span></button>
+    <button type="button" role="tab" data-tab="passport" aria-selected="false"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M9 17h6"/></svg><span data-t="tabPassport"></span><i class="badge" id="badgePassport" hidden></i></button>
+    <button type="button" role="tab" data-tab="collections" aria-selected="false"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.3 6-5.4-3.1-5.4 3.1 1.3-6L3.4 9.3l6-.7z"/></svg><span data-t="tabCollections"></span><i class="badge" id="badgeCollections" hidden></i></button>
+    <button type="button" role="tab" data-tab="diary" aria-selected="false"><svg class="ic" viewBox="0 0 24 24"><path d="M6 3h11a2 2 0 0 1 2 2v16H8a2 2 0 0 1-2-2z"/><path d="M10 8h5M10 12h5M10 16h3"/></svg><span data-t="tabDiary"></span></button>
+  </nav>
+</footer>
+
+<script src="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* =====================================================================
+   1. CONFIGURAÇÃO
+   Tudo o que depende de serviços externos está aqui, para trocar depressa.
+   ===================================================================== */
+var CFG = {
+  styleUrl: 'https://tiles.openfreemap.org/styles/liberty',        // tiles OSM (OpenFreeMap)
+  valhallaUrl: 'https://valhalla1.openstreetmap.de/route',          // servidor de demonstração (FOSSGIS)
+  graphhopperUrl: 'https://graphhopper.com/api/1/route',            // precisa de chave
+  countriesUrl: 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json', // Natural Earth 1:50m
+  saveKey: 'passos-mundo-proto-v1',
+  cityRadiusM: 3000,      // distância a que uma cidade fica descoberta
+  monumentRadiusM: 2000,  // idem para monumentos
+  fogRadiusM: 1500,       // raio que o nevoeiro levanta à volta do caminho
+  sampleM: 200,           // de quantos em quantos metros se verifica fronteiras e descobertas
+  routeTimeoutMs: 25000
+};
+var SPEEDS = { real: 2, fast: 200, turbo: 2000 };  // passos por segundo na caminhada automática
+var SCALES = [1, 2, 5, 10, 25];
+
+/* =====================================================================
+   2. DADOS DO PROTÓTIPO
+   No jogo final vêm de GeoNames, Wikidata e Natural Earth.
+   Coordenadas em [longitude, latitude].
+   ===================================================================== */
+var CITIES = [
+  { id:'lisboa',   pt:'Lisboa',   en:'Lisbon', cc:'PT', p:[-9.1394,38.7138], next:'santarem' },
+  { id:'santarem', pt:'Santarém', cc:'PT', p:[-8.6850,39.2362], next:'tomar' },
+  { id:'tomar',    pt:'Tomar',    cc:'PT', p:[-8.4150,39.6036], next:'coimbra' },
+  { id:'coimbra',  pt:'Coimbra',  cc:'PT', p:[-8.4290,40.2089], next:'porto' },
+  { id:'porto',    pt:'Porto',    cc:'PT', p:[-8.6110,41.1496], next:'coimbra' },
+  { id:'evora',    pt:'Évora',    cc:'PT', p:[-7.9094,38.5708], next:'elvas' },
+  { id:'elvas',    pt:'Elvas',    cc:'PT', p:[-7.1628,38.8810], next:'badajoz' },
+  { id:'badajoz',  pt:'Badajoz',  cc:'ES', p:[-6.9703,38.8786], next:'merida' },
+  { id:'merida',   pt:'Mérida',   cc:'ES', p:[-6.3437,38.9161], next:'badajoz' },
+  { id:'faro',     pt:'Faro',     cc:'PT', p:[-7.9350,37.0161], next:'evora' }
+];
+var POIS = [
+  { id:'c-lisboa',   kind:'city', capital:true, pt:'Lisboa', en:'Lisbon', cc:'PT', p:[-9.1399,38.7169] },
+  { id:'c-alverca',  kind:'city', pt:'Alverca do Ribatejo', cc:'PT', p:[-9.0386,38.8958] },
+  { id:'c-vfx',      kind:'city', pt:'Vila Franca de Xira', cc:'PT', p:[-8.9897,38.9553] },
+  { id:'c-azambuja', kind:'city', pt:'Azambuja', cc:'PT', p:[-8.8669,39.0697] },
+  { id:'c-cartaxo',  kind:'city', pt:'Cartaxo', cc:'PT', p:[-8.7878,39.1608] },
+  { id:'c-santarem', kind:'city', pt:'Santarém', cc:'PT', p:[-8.6850,39.2362] },
+  { id:'c-tomar',    kind:'city', pt:'Tomar', cc:'PT', p:[-8.4150,39.6036] },
+  { id:'c-coimbra',  kind:'city', pt:'Coimbra', cc:'PT', p:[-8.4290,40.2089] },
+  { id:'c-porto',    kind:'city', pt:'Porto', cc:'PT', p:[-8.6110,41.1496] },
+  { id:'c-evora',    kind:'city', pt:'Évora', cc:'PT', p:[-7.9094,38.5708] },
+  { id:'c-elvas',    kind:'city', pt:'Elvas', cc:'PT', p:[-7.1628,38.8810] },
+  { id:'c-faro',     kind:'city', pt:'Faro', cc:'PT', p:[-7.9350,37.0161] },
+  { id:'c-badajoz',  kind:'city', pt:'Badajoz', cc:'ES', p:[-6.9703,38.8786] },
+  { id:'c-merida',   kind:'city', pt:'Mérida', cc:'ES', p:[-6.3437,38.9161] },
+  { id:'c-madrid',   kind:'city', capital:true, pt:'Madrid', cc:'ES', p:[-3.7038,40.4168] },
+  { id:'m-comercio', kind:'monument', pt:'Praça do Comércio', cc:'PT', p:[-9.1364,38.7075] },
+  { id:'m-se',       kind:'monument', pt:'Sé de Lisboa', en:'Lisbon Cathedral', cc:'PT', p:[-9.1326,38.7098] },
+  { id:'m-belem',    kind:'monument', pt:'Torre de Belém', en:'Belém Tower', cc:'PT', p:[-9.2160,38.6916] },
+  { id:'m-jeronimos',kind:'monument', pt:'Mosteiro dos Jerónimos', en:'Jerónimos Monastery', cc:'PT', p:[-9.2068,38.6979] },
+  { id:'m-oceanario',kind:'monument', pt:'Oceanário de Lisboa', en:'Lisbon Oceanarium', cc:'PT', p:[-9.0937,38.7635] },
+  { id:'m-vgama',    kind:'monument', pt:'Torre Vasco da Gama', en:'Vasco da Gama Tower', cc:'PT', p:[-9.0916,38.7748] },
+  { id:'m-carmona',  kind:'monument', pt:'Ponte Marechal Carmona', en:'Marechal Carmona Bridge', cc:'PT', p:[-8.9840,38.9505] },
+  { id:'m-portassol',kind:'monument', pt:'Portas do Sol', cc:'PT', p:[-8.6770,39.2334] },
+  { id:'m-graca',    kind:'monument', pt:'Igreja da Graça', en:'Church of Graça', cc:'PT', p:[-8.6812,39.2362] },
+  { id:'m-cristo',   kind:'monument', pt:'Convento de Cristo', en:'Convent of Christ', cc:'PT', p:[-8.4186,39.6039] },
+  { id:'m-ucoimbra', kind:'monument', pt:'Universidade de Coimbra', en:'University of Coimbra', cc:'PT', p:[-8.4262,40.2076] },
+  { id:'m-clerigos', kind:'monument', pt:'Torre dos Clérigos', en:'Clérigos Tower', cc:'PT', p:[-8.6139,41.1458] },
+  { id:'m-templo',   kind:'monument', pt:'Templo romano de Évora', en:'Roman Temple of Évora', cc:'PT', p:[-7.9073,38.5726] },
+  { id:'m-amoreira', kind:'monument', pt:'Aqueduto da Amoreira', en:'Amoreira Aqueduct', cc:'PT', p:[-7.1725,38.8789] },
+  { id:'m-alcazaba', kind:'monument', pt:'Alcazaba de Badajoz', cc:'ES', p:[-6.9681,38.8833] },
+  { id:'m-teatro',   kind:'monument', pt:'Teatro romano de Mérida', en:'Roman Theatre of Mérida', cc:'ES', p:[-6.3385,38.9153] }
+];
+/* Percurso de reserva Lisboa → Santarém, aproximado e traçado à mão ao longo
+   do corredor Sacavém, Vila Franca de Xira, Azambuja, Cartaxo. Só é usado se
+   o servidor de percursos não responder. */
+var OFFLINE_LIS_STR = [
+  [-9.1394,38.7138],[-9.1340,38.7255],[-9.1335,38.7420],[-9.1180,38.7600],[-9.1020,38.7780],
+  [-9.1040,38.7935],[-9.0890,38.8260],[-9.0680,38.8600],[-9.0390,38.8960],[-9.0100,38.9270],
+  [-8.9897,38.9553],[-8.9720,38.9930],[-8.9640,39.0230],[-8.9340,39.0380],[-8.8669,39.0697],
+  [-8.8330,39.1160],[-8.7878,39.1608],[-8.7300,39.1950],[-8.7000,39.2200],[-8.6850,39.2362]
+];
+/* Os 195 países do passaporte: 193 membros da ONU, Vaticano e Palestina.
+   Cada bloco de 5 caracteres é o código ISO de 2 letras seguido do numérico. */
+var ISO = 'AF004AL008DZ012AD020AO024AG028AR032AM051AU036AT040AZ031BS044BH048BD050BB052BY112BE056BZ084BJ204BT064' +
+  'BO068BA070BW072BR076BN096BG100BF854BI108CV132KH116CM120CA124CF140TD148CL152CN156CO170KM174CG178CD180' +
+  'CR188CI384HR191CU192CY196CZ203DK208DJ262DM212DO214EC218EG818SV222GQ226ER232EE233SZ748ET231FJ242FI246' +
+  'FR250GA266GM270GE268DE276GH288GR300GD308GT320GN324GW624GY328HT332HN340HU348IS352IN356ID360IR364IQ368' +
+  'IE372IL376IT380JM388JP392JO400KZ398KE404KI296KP408KR410KW414KG417LA418LV428LB422LS426LR430LY434LI438' +
+  'LT440LU442MG450MW454MY458MV462ML466MT470MH584MR478MU480MX484FM583MD498MC492MN496ME499MA504MZ508MM104' +
+  'NA516NR520NP524NL528NZ554NI558NE562NG566MK807NO578OM512PK586PW585PA591PG598PY600PE604PH608PL616PT620' +
+  'QA634RO642RU643RW646KN659LC662VC670WS882SM674ST678SA682SN686RS688SC690SL694SG702SK703SI705SB090SO706' +
+  'ZA710SS728ES724LK144SD729SR740SE752CH756SY760TJ762TZ834TH764TL626TG768TO776TT780TN788TR792TM795TV798' +
+  'UG800UA804AE784GB826US840UY858UZ860VU548VE862VN704YE887ZM894ZW716VA336PS275';
+var A2 = [], N3_TO_A2 = {};
+for (var _i = 0; _i < ISO.length; _i += 5) { A2.push(ISO.substr(_i, 2)); N3_TO_A2[ISO.substr(_i + 2, 3)] = ISO.substr(_i, 2); }
+
+/* =====================================================================
+   3. TEXTOS (português europeu e inglês)
+   ===================================================================== */
+var T = {
+pt: {
+  appTitle:'Passos pelo Mundo', steps:'passos', tabMap:'Mapa', tabPassport:'Passaporte', tabCollections:'Coleções', tabDiary:'Diário',
+  walk:'Caminhar', stop:'Parar', autoSub:'automático', here:'Posição atual',
+  hudNoTrip:'Sem viagem ativa', hudPick:'Escolhe um destino', hudBank:'{n} passos guardados',
+  hudDone:'{a} km feitos', hudLeft:'{b} km em falta', hudStepsLeft:'Faltam {n} passos',
+  aPlan:'Escolher ou mudar o destino', aSettings:'Definições', aWorld:'Ver o mundo inteiro', aFollow:'Seguir o viajante', aFog:'Nevoeiro de descoberta', aClose:'Fechar',
+  planTitle:'Nova viagem', planIntro:'Cada passo real avança o teu viajante no mapa. Neste protótipo os passos são simulados com os botões em baixo.',
+  planChange:'Mudar de destino termina a viagem atual. O caminho já feito fica guardado.',
+  from:'Partida', to:'Destino', calc:'Calcular percurso', calculating:'A calcular o percurso pedonal…',
+  sumKm:'{km} km a pé', sumSteps:'Cerca de {n} passos, com 1 passo a valer {m} m.', sumDays:'A 8 000 passos por dia: {d} dias.',
+  srcValhalla:'Percurso real calculado pelo Valhalla sobre dados OpenStreetMap.',
+  srcGraphhopper:'Percurso real calculado pelo GraphHopper sobre dados OpenStreetMap.',
+  srcOffline:'Percurso aproximado, guardado no protótipo. O servidor de percursos não respondeu.',
+  retry:'Tentar o percurso real outra vez', start:'Começar viagem', cancel:'Cancelar',
+  errTooFar:'Este destino fica a mais de 250 km a pé, o limite do servidor de demonstração. No jogo final, as viagens longas são divididas em etapas.',
+  errFailed:'Não foi possível calcular o percurso. Verifica a ligação à internet e tenta outra vez.',
+  errKey:'Falta a chave da API GraphHopper. Podes escrevê-la nas definições.',
+  arriveTitle:'Chegaste a {city}', arriveBody:'{km} km em {n} passos.', arriveNext:'Escolher novo destino', arriveStay:'Ficar por aqui',
+  toCountry:'Novo país no passaporte: <b>{name}</b>', toCity:'Cidade descoberta: <b>{name}</b>', toCapital:'Capital descoberta: <b>{name}</b>',
+  toMonument:'Monumento descoberto: <b>{name}</b>', toBank:'{n} passos guardados para a próxima viagem', toNoSave:'Este navegador não deixa gravar o progresso.',
+  toCountries:'Sem dados de fronteiras: os países só são detetados à chegada.',
+  passTitle:'Passaporte', passCount:'de 195 países', passLead:'Cada país onde entras fica com um selo permanente. As fronteiras são detetadas pelo caminho, sem GPS.', entry:'Entrada',
+  collTitle:'Coleções', cities:'Cidades', capitals:'Capitais', monuments:'Monumentos', locked:'Por descobrir',
+  collLead:'Neste protótipo há apenas alguns lugares de exemplo. Ficam descobertos quando o caminho passa perto.',
+  diaryTitle:'Diário de exploração', stSteps:'passos dados', stKm:'km percorridos', stCountries:'países', stTrips:'viagens concluídas',
+  trips:'Viagens', noTrips:'Ainda não concluíste nenhuma viagem.', events:'Descobertas', noEvents:'As tuas descobertas aparecem aqui.',
+  partial:'interrompida', evCountry:'País: {name}', evCity:'Cidade: {name}', evCapital:'Capital: {name}', evMonument:'Monumento: {name}',
+  setTitle:'Definições', stride:'Comprimento do passo', scale:'Escala do jogo', scaleHint:'1 passo real vale {m} m no mapa.',
+  autoSpeed:'Velocidade da caminhada automática', spReal:'Real, 2 passos por segundo', spFast:'Rápida, 200 passos por segundo', spTurbo:'Turbo, 2 000 passos por segundo',
+  engine:'Motor de percursos', enValhalla:'Valhalla, servidor de demonstração', enGraphhopper:'GraphHopper, com a tua chave', ghKey:'Chave da API GraphHopper',
+  lang:'Língua', credits:'Créditos e licenças', reset:'Reiniciar o jogo', resetConfirm:'Apagar todo o progresso', resetDone:'Progresso apagado.',
+  mapFail:'Não foi possível carregar o mapa. Verifica a ligação à internet e recarrega a página. Os passos e o passaporte continuam a funcionar.',
+  crMap:'Mapa desenhado com MapLibre GL JS (licença BSD de 3 cláusulas).',
+  crTiles:'Tiles: OpenFreeMap © OpenMapTiles. Dados © contribuidores do OpenStreetMap, licença ODbL.',
+  crRoute:'Percursos pedonais: Valhalla (MIT) no servidor de demonstração da FOSSGIS, ou GraphHopper (Apache 2.0). Dados OpenStreetMap.',
+  crBorders:'Fronteiras: Natural Earth, domínio público, através do pacote world-atlas.'
+},
+en: {
+  appTitle:'Steps Around the World', steps:'steps', tabMap:'Map', tabPassport:'Passport', tabCollections:'Collections', tabDiary:'Journal',
+  walk:'Walk', stop:'Stop', autoSub:'automatic', here:'Current position',
+  hudNoTrip:'No active trip', hudPick:'Pick a destination', hudBank:'{n} steps saved',
+  hudDone:'{a} km done', hudLeft:'{b} km to go', hudStepsLeft:'{n} steps to go',
+  aPlan:'Choose or change destination', aSettings:'Settings', aWorld:'See the whole world', aFollow:'Follow the traveller', aFog:'Fog of discovery', aClose:'Close',
+  planTitle:'New trip', planIntro:'Every real step moves your traveller on the map. In this prototype, steps are simulated with the buttons below.',
+  planChange:'Changing destination ends the current trip. The path already walked is kept.',
+  from:'From', to:'Destination', calc:'Calculate route', calculating:'Calculating the walking route…',
+  sumKm:'{km} km on foot', sumSteps:'About {n} steps, with 1 step worth {m} m.', sumDays:'At 8,000 steps a day: {d} days.',
+  srcValhalla:'Real route calculated by Valhalla on OpenStreetMap data.',
+  srcGraphhopper:'Real route calculated by GraphHopper on OpenStreetMap data.',
+  srcOffline:'Approximate route stored in the prototype. The routing server did not answer.',
+  retry:'Try the real route again', start:'Start trip', cancel:'Cancel',
+  errTooFar:'This destination is more than 250 km away on foot, the demo server limit. In the final game, long trips are split into stages.',
+  errFailed:'The route could not be calculated. Check your internet connection and try again.',
+  errKey:'The GraphHopper API key is missing. You can enter it in Settings.',
+  arriveTitle:'You reached {city}', arriveBody:'{km} km in {n} steps.', arriveNext:'Choose a new destination', arriveStay:'Stay here',
+  toCountry:'New country in your passport: <b>{name}</b>', toCity:'City discovered: <b>{name}</b>', toCapital:'Capital discovered: <b>{name}</b>',
+  toMonument:'Monument discovered: <b>{name}</b>', toBank:'{n} steps saved for the next trip', toNoSave:'This browser does not allow saving progress.',
+  toCountries:'No border data: countries are only detected on arrival.',
+  passTitle:'Passport', passCount:'of 195 countries', passLead:'Every country you enter gets a permanent stamp. Borders are detected along the path, without GPS.', entry:'Entry',
+  collTitle:'Collections', cities:'Cities', capitals:'Capitals', monuments:'Monuments', locked:'Not discovered yet',
+  collLead:'This prototype only has a few sample places. They are discovered when your path passes nearby.',
+  diaryTitle:'Exploration journal', stSteps:'steps taken', stKm:'km travelled', stCountries:'countries', stTrips:'trips completed',
+  trips:'Trips', noTrips:'You have not completed a trip yet.', events:'Discoveries', noEvents:'Your discoveries will show up here.',
+  partial:'interrupted', evCountry:'Country: {name}', evCity:'City: {name}', evCapital:'Capital: {name}', evMonument:'Monument: {name}',
+  setTitle:'Settings', stride:'Step length', scale:'Game scale', scaleHint:'1 real step is worth {m} m on the map.',
+  autoSpeed:'Automatic walking speed', spReal:'Real, 2 steps per second', spFast:'Fast, 200 steps per second', spTurbo:'Turbo, 2,000 steps per second',
+  engine:'Routing engine', enValhalla:'Valhalla, demo server', enGraphhopper:'GraphHopper, with your key', ghKey:'GraphHopper API key',
+  lang:'Language', credits:'Credits and licences', reset:'Restart the game', resetConfirm:'Erase all progress', resetDone:'Progress erased.',
+  mapFail:'The map could not be loaded. Check your internet connection and reload the page. Steps and passport still work.',
+  crMap:'Map drawn with MapLibre GL JS (3-clause BSD licence).',
+  crTiles:'Tiles: OpenFreeMap © OpenMapTiles. Data © OpenStreetMap contributors, ODbL licence.',
+  crRoute:'Walking routes: Valhalla (MIT) on the FOSSGIS demo server, or GraphHopper (Apache 2.0). OpenStreetMap data.',
+  crBorders:'Borders: Natural Earth, public domain, through the world-atlas package.'
+}
+};
+
+/* =====================================================================
+   4. GEOMETRIA (funções puras, sem mapa nem DOM)
+   ===================================================================== */
+var RAD = Math.PI / 180, EARTH = 6371008.8;
+function hav(a, b) { // distância em metros entre dois pontos [lng, lat]
+  var dLat = (b[1] - a[1]) * RAD, dLng = (b[0] - a[0]) * RAD;
+  var s = Math.sin(dLat / 2), c = Math.sin(dLng / 2);
+  var h = s * s + Math.cos(a[1] * RAD) * Math.cos(b[1] * RAD) * c * c;
+  return 2 * EARTH * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+function decodePolyline(str, precision) { // formato usado pelo Valhalla (precisão 6)
+  var f = Math.pow(10, precision || 6), i = 0, lat = 0, lng = 0, out = [], b, shift, result;
+  while (i < str.length) {
+    shift = 0; result = 0;
+    do { b = str.charCodeAt(i++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+    shift = 0; result = 0;
+    do { b = str.charCodeAt(i++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lng += (result & 1) ? ~(result >> 1) : (result >> 1);
+    out.push([lng / f, lat / f]);
+  }
+  return out;
+}
+function buildRoute(coords) { // junta as distâncias acumuladas a uma linha
+  var pts = [], cum = [], total = 0, i, last = null;
+  for (i = 0; i < coords.length; i++) {
+    var p = [Number(coords[i][0]), Number(coords[i][1])];
+    if (!isFinite(p[0]) || !isFinite(p[1])) continue;
+    if (last) { var d = hav(last, p); if (d < 0.01) continue; total += d; }
+    pts.push(p); cum.push(total); last = p;
+  }
+  return { coords: pts, cum: cum, total: total };
+}
+function locate(route, d) { // ponto a d metros do início
+  var cum = route.cum, n = cum.length;
+  if (d <= 0 || n < 2) return { i: 0, f: 0, pt: route.coords[0] };
+  if (d >= route.total) return { i: n - 1, f: 0, pt: route.coords[n - 1] };
+  var lo = 0, hi = n - 1;
+  while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (cum[mid] <= d) lo = mid; else hi = mid; }
+  var seg = cum[hi] - cum[lo], f = seg > 0 ? (d - cum[lo]) / seg : 0, a = route.coords[lo], b = route.coords[hi];
+  return { i: lo, f: f, pt: [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f] };
+}
+function sliceRoute(route, d0, d1) { // troço da linha entre duas distâncias
+  var A = locate(route, d0), B = locate(route, d1), out = [A.pt], k;
+  for (k = A.i + 1; k <= B.i; k++) out.push(route.coords[k]);
+  var last = out[out.length - 1];
+  if (last[0] !== B.pt[0] || last[1] !== B.pt[1]) out.push(B.pt);
+  return out;
+}
+function decimate(coords, minM) { // tira pontos demasiado juntos
+  if (coords.length < 3) return coords.slice();
+  var out = [coords[0]], last = coords[0], i;
+  for (i = 1; i < coords.length - 1; i++) if (hav(last, coords[i]) >= minM) { out.push(coords[i]); last = coords[i]; }
+  out.push(coords[coords.length - 1]);
+  return out;
+}
+function roundCoords(coords) { return coords.map(function (c) { return [Math.round(c[0] * 1e5) / 1e5, Math.round(c[1] * 1e5) / 1e5]; }); }
+function ringContains(ring, x, y) { // ponto dentro de um anel (ray casting)
+  var inside = false, i, j = ring.length - 1;
+  for (i = 0; i < ring.length; j = i++) {
+    var xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+function polyContains(poly, x, y) {
+  if (!ringContains(poly[0], x, y)) return false;
+  for (var h = 1; h < poly.length; h++) if (ringContains(poly[h], x, y)) return false;
+  return true;
+}
+function geomContains(geom, x, y) {
+  if (!geom) return false;
+  if (geom.type === 'Polygon') return polyContains(geom.coordinates, x, y);
+  if (geom.type === 'MultiPolygon') { for (var i = 0; i < geom.coordinates.length; i++) if (polyContains(geom.coordinates[i], x, y)) return true; }
+  return false;
+}
+function geomBbox(geom) {
+  var b = [180, 90, -180, -90];
+  function ring(r) { for (var i = 0; i < r.length; i++) { if (r[i][0] < b[0]) b[0] = r[i][0]; if (r[i][0] > b[2]) b[2] = r[i][0]; if (r[i][1] < b[1]) b[1] = r[i][1]; if (r[i][1] > b[3]) b[3] = r[i][1]; } }
+  if (!geom) return b;
+  if (geom.type === 'Polygon') ring(geom.coordinates[0]);
+  else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(function (p) { ring(p[0]); });
+  return b;
+}
+function lineBbox(coords) {
+  var b = [180, 90, -180, -90];
+  coords.forEach(function (c) { if (c[0] < b[0]) b[0] = c[0]; if (c[0] > b[2]) b[2] = c[0]; if (c[1] < b[1]) b[1] = c[1]; if (c[1] > b[3]) b[3] = c[1]; });
+  return b;
+}
+
+/* =====================================================================
+   5. ESTADO E GRAVAÇÃO
+   ===================================================================== */
+var S, ROUTE = null, walkedFog = [], COUNTRIES = null, curFeat = null, storageOk = true;
+function freshState() {
+  var pt = (navigator.language || 'pt').toLowerCase().indexOf('pt') === 0;
+  return { v: 1, lang: pt ? 'pt' : 'en', steps: 0, bank: 0, totalM: 0,
+    settings: { stride: 0.75, scale: 1, autoSpeed: 'turbo', fog: true, engine: 'valhalla', ghKey: '' },
+    pos: null, trip: null, countries: {}, cities: {}, monuments: {}, trails: [], trips: [], log: [] };
+}
+function loadState() {
+  try {
+    var raw = localStorage.getItem(CFG.saveKey);
+    if (raw) {
+      var o = JSON.parse(raw);
+      if (o && o.v === 1) {
+        var base = freshState(), k;
+        for (k in base) if (!(k in o)) o[k] = base[k];
+        for (k in base.settings) if (!(k in o.settings)) o.settings[k] = base.settings[k];
+        return o;
+      }
+    }
+  } catch (e) { storageOk = false; }
+  return freshState();
+}
+var saveTimer = null;
+function saveNow() {
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+  try { localStorage.setItem(CFG.saveKey, JSON.stringify(S)); storageOk = true; }
+  catch (e) { if (storageOk) { storageOk = false; toast(t('toNoSave')); } }
+}
+function saveSoon() { if (!saveTimer) saveTimer = setTimeout(saveNow, 900); }
+function saveRoute() { try { if (ROUTE) localStorage.setItem(CFG.saveKey + ':route', JSON.stringify(roundCoords6(ROUTE.coords))); else localStorage.removeItem(CFG.saveKey + ':route'); } catch (e) {} }
+function roundCoords6(coords) { return coords.map(function (c) { return [Math.round(c[0] * 1e6) / 1e6, Math.round(c[1] * 1e6) / 1e6]; }); }
+function loadRoute() { try { var raw = localStorage.getItem(CFG.saveKey + ':route'); if (raw) { var r = buildRoute(JSON.parse(raw)); if (r.coords.length > 1) return r; } } catch (e) {} return null; }
+
+/* =====================================================================
+   6. UTILITÁRIOS DE TEXTO
+   ===================================================================== */
+function t(k, v) {
+  var s = (T[S.lang] || T.pt)[k]; if (s == null) s = T.pt[k]; if (s == null) return k;
+  if (v) for (var key in v) s = s.split('{' + key + '}').join(v[key]);
+  return s;
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function locale() { return S.lang === 'pt' ? 'pt-PT' : 'en-GB'; }
+function nf(n) { return new Intl.NumberFormat(locale()).format(Math.round(n)); }
+function km(m) { return new Intl.NumberFormat(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(m / 1000); }
+function dec(n, d) { return new Intl.NumberFormat(locale(), { minimumFractionDigits: d, maximumFractionDigits: d }).format(n); }
+function dateStr(ts) { try { return new Date(ts).toLocaleDateString(locale(), { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }
+function cityById(id) { for (var i = 0; i < CITIES.length; i++) if (CITIES[i].id === id) return CITIES[i]; return null; }
+function placeName(o) { return (S.lang === 'en' && o.en) ? o.en : o.pt; }
+var dnCache = {};
+function countryName(cc) {
+  try { var loc = locale(); if (!dnCache[loc]) dnCache[loc] = new Intl.DisplayNames([loc], { type: 'region' }); return dnCache[loc].of(cc) || cc; } catch (e) { return cc; }
+}
+function mps() { return S.settings.stride * S.settings.scale; } // metros no mapa por passo real
+
+/* =====================================================================
+   7. MOTOR DE VIAGEM: passos → metros → posição → descobertas
+   ===================================================================== */
+function addSteps(n) {
+  n = Math.max(0, Math.floor(n)); if (!n) return;
+  S.steps += n; S.bank += n;
+  if (S.trip && ROUTE) consumeBank();
+  else { toast(t('toBank', { n: nf(S.bank) }), 'bank'); saveSoon(); requestRender(); }
+}
+function consumeBank() {
+  var tr = S.trip; if (!tr || !ROUTE || S.bank <= 0) return;
+  var m = mps(), remaining = tr.totalM - tr.doneM;
+  var need = Math.max(0, Math.ceil(remaining / m - 1e-9));
+  var use = Math.min(S.bank, need), from = tr.doneM;
+  tr.doneM = (use >= need) ? tr.totalM : Math.min(tr.totalM, from + use * m);
+  S.bank -= use; tr.stepsUsed += use; S.totalM += tr.doneM - from;
+  walkSegment(from, tr.doneM);
+  S.pos.pt = locate(ROUTE, tr.doneM).pt;
+  if (tr.doneM >= tr.totalM - 0.005) arrive(); else { saveSoon(); requestRender(); }
+}
+function walkSegment(d0, d1) { // percorre o troço aos poucos, para não saltar fronteiras nem lugares
+  var d = d0;
+  for (;;) {
+    d = Math.min(d1, d + CFG.sampleM);
+    var p = locate(ROUTE, d).pt, last = walkedFog[walkedFog.length - 1];
+    if (!last || hav(last, p) >= 120) walkedFog.push(p);
+    detect(p);
+    if (d >= d1) break;
+  }
+}
+function detect(p) {
+  if (COUNTRIES) {
+    var f = countryAt(p[0], p[1]);
+    if (f && f.iso2 && f.iso2 !== S.pos.country) enterCountry(f.iso2);
+  }
+  for (var i = 0; i < POIS.length; i++) {
+    var q = POIS[i], store = q.kind === 'city' ? S.cities : S.monuments;
+    if (store[q.id]) continue;
+    if (hav(p, q.p) <= (q.kind === 'city' ? CFG.cityRadiusM : CFG.monumentRadiusM)) discoverPoi(q);
+  }
+}
+function countryAt(x, y) {
+  function inside(f) { var b = f.bbox; return x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3] && geomContains(f.geom, x, y); }
+  if (curFeat && inside(curFeat)) return curFeat;
+  for (var i = 0; i < COUNTRIES.length; i++) if (COUNTRIES[i] !== curFeat && inside(COUNTRIES[i])) return COUNTRIES[i];
+  return null; // mar ou falha do desenho simplificado: mantém o país atual
+}
+function featFor(cc) { if (COUNTRIES) for (var i = 0; i < COUNTRIES.length; i++) if (COUNTRIES[i].iso2 === cc) return COUNTRIES[i]; return null; }
+function enterCountry(cc) {
+  if (A2.indexOf(cc) < 0) return;
+  S.pos.country = cc; curFeat = featFor(cc);
+  if (!S.countries[cc]) {
+    S.countries[cc] = { at: Date.now() };
+    S.log.push({ t: Date.now(), k: 'country', id: cc });
+    toast(t('toCountry', { name: esc(countryName(cc)) }));
+    stampFx(cc); setBadge('passport', true); syncCountryLayer();
+  }
+}
+function discoverPoi(q) {
+  var store = q.kind === 'city' ? S.cities : S.monuments;
+  store[q.id] = { at: Date.now() };
+  S.log.push({ t: Date.now(), k: q.kind === 'city' ? (q.capital ? 'capital' : 'city') : 'monument', id: q.id });
+  toast(t(q.kind === 'city' ? (q.capital ? 'toCapital' : 'toCity') : 'toMonument', { name: esc(placeName(q)) }));
+  setBadge('collections', true); syncPoiMarker(q);
+}
+function arrive() {
+  var tr = S.trip, dest = cityById(tr.toId);
+  stopAuto();
+  S.trails.push(roundCoords(decimate(ROUTE.coords, 150)));
+  S.trips.push({ fromId: tr.fromId, toId: tr.toId, km: tr.totalM / 1000, steps: tr.stepsUsed, start: tr.startedAt, end: Date.now(), source: tr.source });
+  S.pos.cityId = tr.toId; S.pos.pt = ROUTE.coords[ROUTE.coords.length - 1];
+  if (dest && dest.cc !== S.pos.country) enterCountry(dest.cc); // rede de segurança se a fronteira não foi apanhada
+  var info = { city: placeName(dest), kmTxt: km(tr.totalM), steps: nf(tr.stepsUsed) };
+  S.trip = null; ROUTE = null; walkedFog = []; saveRoute(); saveNow();
+  syncTrails(); renderAll(true); showArrival(info);
+}
+function abandonTrip() { // muda de destino a meio: guarda o caminho feito
+  var tr = S.trip; if (!tr || !ROUTE) return;
+  stopAuto();
+  var walked = sliceRoute(ROUTE, 0, tr.doneM);
+  if (walked.length > 1 && tr.doneM > 50) {
+    S.trails.push(roundCoords(decimate(walked, 150)));
+    S.trips.push({ fromId: tr.fromId, toId: tr.toId, km: tr.doneM / 1000, steps: tr.stepsUsed, start: tr.startedAt, end: Date.now(), source: tr.source, partial: true });
+    S.pos.cityId = null;
+  }
+  S.pos.pt = locate(ROUTE, tr.doneM).pt;
+  S.trip = null; ROUTE = null; walkedFog = []; saveRoute(); saveNow(); syncTrails();
+}
+function startTrip(plan) {
+  if (S.trip) abandonTrip();
+  var r = buildRoute(plan.route.coords);
+  if (r.coords.length < 2 || r.total < 1) return false;
+  if (!S.pos) { var c = cityById(plan.fromId); S.pos = { cityId: c.id, pt: c.p.slice(), country: null }; enterCountry(c.cc); }
+  ROUTE = r;
+  S.trip = { fromId: S.pos.cityId, toId: plan.toId, totalM: r.total, doneM: 0, stepsUsed: 0, source: plan.route.source, startedAt: Date.now() };
+  S.pos.pt = r.coords[0]; walkedFog = [r.coords[0]];
+  saveRoute(); walkSegment(0, 0);
+  setFollow(false); fitRoute();
+  if (S.bank > 0) consumeBank();
+  saveNow(); renderAll(true);
+  return true;
+}
+
+/* =====================================================================
+   8. PERCURSOS: Valhalla, GraphHopper e reserva local
+   ===================================================================== */
+function mkErr(code, msg) { var e = new Error(msg || code); e.code = code; return e; }
+function fetchJson(url) {
+  var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, CFG.routeTimeoutMs);
+  return fetch(url, ctrl ? { signal: ctrl.signal } : {}).then(function (res) {
+    return res.text().then(function (txt) { var j = null; try { j = JSON.parse(txt); } catch (e) {} return { ok: res.ok, status: res.status, json: j }; });
+  }).then(function (r) { clearTimeout(timer); return r; }, function (e) { clearTimeout(timer); throw mkErr('network', String(e && e.message)); });
+}
+function routeValhalla(a, b) {
+  var q = { locations: [{ lat: a[1], lon: a[0] }, { lat: b[1], lon: b[0] }], costing: 'pedestrian', units: 'kilometers', directions_type: 'none' };
+  return fetchJson(CFG.valhallaUrl + '?json=' + encodeURIComponent(JSON.stringify(q))).then(function (r) {
+    var j = r.json;
+    if (!r.ok || !j || !j.trip || !j.trip.legs) throw mkErr(j && j.error_code === 154 ? 'too_far' : 'failed', j && j.error);
+    var coords = [];
+    j.trip.legs.forEach(function (leg) { coords = coords.concat(decodePolyline(leg.shape, 6)); });
+    if (coords.length < 2) throw mkErr('failed');
+    return { coords: coords, source: 'valhalla' };
+  });
+}
+function routeGraphhopper(a, b, key) {
+  if (!key) return Promise.reject(mkErr('nokey'));
+  var u = CFG.graphhopperUrl + '?point=' + a[1] + ',' + a[0] + '&point=' + b[1] + ',' + b[0] +
+    '&profile=foot&points_encoded=false&instructions=false&key=' + encodeURIComponent(key);
+  return fetchJson(u).then(function (r) {
+    var j = r.json, pts = j && j.paths && j.paths[0] && j.paths[0].points && j.paths[0].points.coordinates;
+    if (!r.ok || !pts || pts.length < 2) throw mkErr('failed', j && j.message);
+    return { coords: pts.map(function (c) { return [c[0], c[1]]; }), source: 'graphhopper' };
+  });
+}
+function fetchRoute(a, b) {
+  return S.settings.engine === 'graphhopper' ? routeGraphhopper(a, b, S.settings.ghKey.trim()) : routeValhalla(a, b);
+}
+function offlineRoute(fromId, toId) {
+  if (fromId === 'lisboa' && toId === 'santarem') return { coords: OFFLINE_LIS_STR.slice(), source: 'offline' };
+  if (fromId === 'santarem' && toId === 'lisboa') return { coords: OFFLINE_LIS_STR.slice().reverse(), source: 'offline' };
+  return null;
+}
+
+/* =====================================================================
+   9. FRONTEIRAS (Natural Earth, verificadas no próprio dispositivo)
+   ===================================================================== */
+function loadCountries() {
+  if (typeof fetch === 'undefined' || typeof topojson === 'undefined') { toast(t('toCountries')); return; }
+  fetch(CFG.countriesUrl).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); }).then(function (topo) {
+    var fc = topojson.feature(topo, topo.objects.countries);
+    COUNTRIES = fc.features.filter(function (f) { return f.geometry; }).map(function (f) {
+      var n3 = ('000' + f.id).slice(-3);
+      return { iso2: N3_TO_A2[n3] || null, name: f.properties && f.properties.name, geom: f.geometry, bbox: geomBbox(f.geometry) };
+    });
+    if (S.pos && S.pos.country) curFeat = featFor(S.pos.country);
+    countriesGeo = { type: 'FeatureCollection', features: COUNTRIES.filter(function (c) { return c.iso2; }).map(function (c) { return { type: 'Feature', properties: { iso2: c.iso2 }, geometry: c.geom }; }) };
+    syncCountryLayer(true);
+  }).catch(function () { toast(t('toCountries')); });
+}
+
+/* =====================================================================
+   10. MAPA (MapLibre) E NEVOEIRO
+   ===================================================================== */
+var map = null, mapReady = false, follow = false, player = null, destMk = null, poiMk = {}, fogCanvas = null, countriesGeo = null;
+var EMPTY = { type: 'FeatureCollection', features: [] };
+function line(coords) { return coords && coords.length > 1 ? { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: coords } } : EMPTY; }
+function initMap() {
+  if (typeof maplibregl === 'undefined') { mapFail(); return; }
+  try {
+    var start = S.pos ? S.pos.pt : CITIES[0].p;
+    map = new maplibregl.Map({ container: 'map', style: CFG.styleUrl, center: start, zoom: S.pos ? 11 : 9, minZoom: 1, maxZoom: 18,
+      attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false });
+  } catch (e) { map = null; mapFail(); return; }
+  try { map.touchZoomRotate.disableRotation(); map.keyboard.disableRotation(); } catch (e) {}
+  map.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: ['<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">&copy; OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>', 'Percursos: Valhalla ou GraphHopper', 'Fronteiras: Natural Earth'] }), 'bottom-left');
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+  var failTimer = setTimeout(function () { if (!mapReady) mapFail(); }, 15000);
+  map.on('load', function () {
+    clearTimeout(failTimer); mapReady = true; el('mapmsg').hidden = true;
+    map.addSource('countries', { type: 'geojson', data: EMPTY });
+    map.addLayer({ id: 'cty-fill', type: 'fill', source: 'countries', filter: ['in', ['get', 'iso2'], ['literal', []]],
+      paint: { 'fill-color': '#F2B705', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 1, 0.5, 5, 0.22, 8, 0] } });
+    map.addLayer({ id: 'cty-line', type: 'line', source: 'countries', filter: ['in', ['get', 'iso2'], ['literal', []]],
+      paint: { 'line-color': '#B88600', 'line-width': 1.5, 'line-opacity': ['interpolate', ['linear'], ['zoom'], 1, 0.9, 7, 0.5, 10, 0] } });
+    map.addSource('trails', { type: 'geojson', data: EMPTY });
+    map.addLayer({ id: 'trails', type: 'line', source: 'trails', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#B88600', 'line-width': 3, 'line-opacity': 0.85 } });
+    map.addSource('rest', { type: 'geojson', data: EMPTY });
+    map.addLayer({ id: 'rest-case', type: 'line', source: 'rest', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 7, 'line-opacity': 0.85 } });
+    map.addLayer({ id: 'rest', type: 'line', source: 'rest', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#2F6FED', 'line-width': 4 } });
+    map.addSource('done', { type: 'geojson', data: EMPTY });
+    map.addLayer({ id: 'done-case', type: 'line', source: 'done', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#17233F', 'line-width': 8 } });
+    map.addLayer({ id: 'done', type: 'line', source: 'done', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#F2B705', 'line-width': 5 } });
+
+    fogCanvas = document.createElement('canvas'); fogCanvas.id = 'fog';
+    var cv = map.getCanvas(); cv.parentNode.insertBefore(fogCanvas, cv.nextSibling);
+    POIS.forEach(function (q) { var e = markerEl('mk-poi', 1); poiMk[q.id] = { el: e.inner, mk: new maplibregl.Marker({ element: e.outer }).setLngLat(q.p).addTo(map) }; syncPoiMarker(q); });
+    destMk = new maplibregl.Marker({ element: markerEl('mk-dest', 2).outer }).setLngLat(start);
+    player = new maplibregl.Marker({ element: markerEl('mk-player', 3).outer }).setLngLat(start);
+    map.on('move', drawFog); map.on('resize', drawFog);
+    map.on('zoom', zoomClass); zoomClass();
+    map.on('dragstart', function () { setFollow(false); });
+    syncCountryLayer(true); syncTrails(); syncMap(true);
+    if (S.trip && ROUTE) fitRoute();
+  });
+  map.on('error', function () { /* falhas de tiles isoladas não param o jogo */ });
+}
+function markerEl(cls, z) { var outer = document.createElement('div'), inner = document.createElement('div'); inner.className = cls; outer.appendChild(inner); outer.style.zIndex = String(z); return { outer: outer, inner: inner }; }
+function mapFail() { var m = el('mapmsg'); m.textContent = t('mapFail'); m.hidden = false; }
+function zoomClass() { if (!map) return; var z = map.getZoom(), c = el('map').classList; c.toggle('far', z < 8.5); c.toggle('mid', z >= 8.5 && z < 11.5); }
+function syncPoiMarker(q) {
+  var m = poiMk[q.id]; if (!m) return;
+  var found = (q.kind === 'city' ? S.cities : S.monuments)[q.id];
+  m.el.className = 'mk-poi' + (found ? '' : ' locked');
+  m.el.textContent = found ? placeName(q) : '?';
+}
+function syncCountryLayer(withData) {
+  if (!mapReady) return;
+  if (withData && countriesGeo) map.getSource('countries').setData(countriesGeo);
+  var f = ['in', ['get', 'iso2'], ['literal', Object.keys(S.countries)]];
+  map.setFilter('cty-fill', f); map.setFilter('cty-line', f);
+}
+function syncTrails() {
+  if (!mapReady) return;
+  map.getSource('trails').setData(S.trails.length ? { type: 'Feature', properties: {}, geometry: { type: 'MultiLineString', coordinates: S.trails } } : EMPTY);
+}
+function showMk(mk, lngLat) { mk.setLngLat(lngLat); if (!mk._shown) { mk.addTo(map); mk._shown = true; } }
+function hideMk(mk) { if (mk._shown) { mk.remove(); mk._shown = false; } }
+function syncMap(force) {
+  if (!mapReady) return;
+  if (S.trip && ROUTE) {
+    var d = S.trip.doneM, pt = locate(ROUTE, d).pt;
+    map.getSource('done').setData(line(sliceRoute(ROUTE, 0, d)));
+    map.getSource('rest').setData(line(sliceRoute(ROUTE, d, ROUTE.total)));
+    showMk(player, pt);
+    showMk(destMk, ROUTE.coords[ROUTE.coords.length - 1]);
+    if (follow) map.easeTo({ center: pt, duration: force ? 0 : 200, easing: function (x) { return x; } });
+  } else {
+    map.getSource('done').setData(EMPTY); map.getSource('rest').setData(EMPTY);
+    hideMk(destMk);
+    if (S.pos) showMk(player, S.pos.pt); else hideMk(player);
+  }
+  drawFog();
+}
+function fitRoute() {
+  if (!mapReady || !ROUTE) return;
+  var b = lineBbox(ROUTE.coords);
+  map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: { top: 150, bottom: 50, left: 40, right: 70 }, duration: 700, maxZoom: 14 });
+}
+function setFollow(on) {
+  follow = !!on; el('btnFollow').setAttribute('aria-pressed', follow ? 'true' : 'false');
+  if (follow && mapReady && S.pos) map.easeTo({ center: S.pos.pt, zoom: Math.max(map.getZoom(), 13.5), duration: 600 });
+}
+function fogPaths() {
+  var paths = S.trails.slice();
+  if (S.trip && ROUTE && walkedFog.length) paths.push(walkedFog.concat([S.pos.pt]));
+  else if (S.pos) paths.push([S.pos.pt]);
+  return paths;
+}
+function drawFog() {
+  if (!mapReady || !fogCanvas) return;
+  var box = map.getContainer(), w = box.clientWidth, h = box.clientHeight, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (fogCanvas.width !== Math.round(w * dpr) || fogCanvas.height !== Math.round(h * dpr)) {
+    fogCanvas.width = Math.round(w * dpr); fogCanvas.height = Math.round(h * dpr);
+    fogCanvas.style.width = w + 'px'; fogCanvas.style.height = h + 'px';
+  }
+  var ctx = fogCanvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.globalCompositeOperation = 'source-over'; ctx.clearRect(0, 0, w, h);
+  if (!S.settings.fog) return;
+  var z = map.getZoom(), alpha = z <= 3 ? 0.3 : z >= 6 ? 0.52 : 0.3 + (z - 3) / 3 * 0.22;
+  ctx.fillStyle = 'rgba(23,35,63,' + alpha.toFixed(3) + ')'; ctx.fillRect(0, 0, w, h);
+  var c = map.getCenter(), p0 = map.project([c.lng, c.lat]);
+  var lngOff = CFG.fogRadiusM / (111320 * Math.max(0.05, Math.cos(c.lat * RAD)));
+  var p1 = map.project([c.lng + lngOff, c.lat]);
+  var rpx = Math.max(3, Math.abs(p1.x - p0.x));
+  var paths = fogPaths(), rings = [[1.55, 0.28], [1.28, 0.5], [1, 1]];
+  ctx.globalCompositeOperation = 'destination-out'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (var r = 0; r < rings.length; r++) {
+    var rad = rpx * rings[r][0]; ctx.strokeStyle = ctx.fillStyle = 'rgba(0,0,0,' + rings[r][1] + ')'; ctx.lineWidth = rad * 2;
+    for (var i = 0; i < paths.length; i++) {
+      var path = paths[i]; if (!path.length) continue;
+      var a = map.project(path[0]);
+      ctx.beginPath(); ctx.arc(a.x, a.y, rad, 0, Math.PI * 2); ctx.fill();
+      if (path.length > 1) { ctx.beginPath(); ctx.moveTo(a.x, a.y); for (var k = 1; k < path.length; k++) { var q = map.project(path[k]); ctx.lineTo(q.x, q.y); } ctx.stroke(); }
+    }
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/* =====================================================================
+   11. INTERFACE
+   ===================================================================== */
+function el(id) { return document.getElementById(id); }
+var renderQueued = false;
+function requestRender() { if (renderQueued) return; renderQueued = true; setTimeout(function () { renderQueued = false; renderHud(); syncMap(); }, 110); }
+function renderAll(forceMap) { renderStatic(); renderHud(); if (openTab !== 'map') renderSheet(); syncMap(forceMap); }
+function renderStatic() {
+  document.documentElement.lang = S.lang === 'pt' ? 'pt-PT' : 'en';
+  document.title = t('appTitle');
+  var nodes = document.querySelectorAll('[data-t]');
+  for (var i = 0; i < nodes.length; i++) nodes[i].textContent = t(nodes[i].getAttribute('data-t'));
+  el('lbl1k').textContent = '+' + nf(1000); el('lbl10k').textContent = '+' + nf(10000);
+  el('btnPlan').setAttribute('aria-label', t('aPlan')); el('btnPlan').title = t('aPlan');
+  el('btnSettings').setAttribute('aria-label', t('aSettings')); el('btnSettings').title = t('aSettings');
+  el('btnWorld').setAttribute('aria-label', t('aWorld')); el('btnWorld').title = t('aWorld');
+  el('btnFollow').setAttribute('aria-label', t('aFollow')); el('btnFollow').title = t('aFollow');
+  el('btnFog').setAttribute('aria-label', t('aFog')); el('btnFog').title = t('aFog');
+  el('btnFog').setAttribute('aria-pressed', S.settings.fog ? 'true' : 'false');
+  el('sheetClose').setAttribute('aria-label', t('aClose'));
+  renderAuto();
+  POIS.forEach(syncPoiMarker);
+}
+function renderAuto() {
+  var on = !!autoTimer;
+  el('btnAuto').setAttribute('aria-pressed', on ? 'true' : 'false');
+  el('autoLbl').textContent = on ? t('stop') : t('walk'); el('autoSub').textContent = t('autoSub');
+}
+function posLabel() { if (!S.pos) return t('appTitle'); var c = S.pos.cityId && cityById(S.pos.cityId); return c ? placeName(c) : t('here'); }
+function renderHud() {
+  var tr = S.trip, pct = 0;
+  if (tr && ROUTE) {
+    pct = tr.totalM > 0 ? Math.min(1, tr.doneM / tr.totalM) : 0;
+    var fc = tr.fromId && cityById(tr.fromId);
+    el('hudFrom').textContent = fc ? placeName(fc) : t('here');
+    el('hudTo').textContent = placeName(cityById(tr.toId));
+    el('hudL').textContent = t('hudDone', { a: km(tr.doneM) });
+    el('hudR').textContent = t('hudLeft', { b: km(tr.totalM - tr.doneM) });
+    el('hudMsg').textContent = t('hudStepsLeft', { n: nf(Math.max(0, Math.ceil((tr.totalM - tr.doneM) / mps() - 1e-9))) });
+  } else {
+    el('hudFrom').textContent = posLabel(); el('hudTo').textContent = '';
+    el('hudL').textContent = t('hudNoTrip'); el('hudR').textContent = '';
+    el('hudMsg').textContent = S.bank > 0 ? t('hudBank', { n: nf(S.bank) }) : t('hudPick');
+  }
+  el('hudFill').style.width = (pct * 100) + '%'; el('hudDot').style.left = (pct * 100) + '%';
+  el('hudTrack').setAttribute('aria-valuenow', String(Math.round(pct * 100)));
+  var n = Object.keys(S.countries).length;
+  el('hudChip').textContent = (S.pos && S.pos.country ? S.pos.country + ' ' : '') + n + '/195';
+}
+var toastKeys = {};
+function toast(html, key) {
+  var box = el('toasts'); if (!box) return;
+  var d = key && toastKeys[key];
+  if (d && d.parentNode) { d.innerHTML = html; clearTimeout(d._t); }
+  else { d = document.createElement('div'); d.className = 'toast'; d.innerHTML = html; box.appendChild(d); if (key) toastKeys[key] = d; while (box.children.length > 3) box.removeChild(box.firstChild); }
+  d._t = setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); if (key) delete toastKeys[key]; }, 3200);
+}
+function setBadge(tab, on) { var b = el(tab === 'passport' ? 'badgePassport' : 'badgeCollections'); if (b) b.hidden = !on || openTab === tab; }
+var INKS = ['#C2274B', '#1F4E9E', '#237A57', '#6A3FA0', '#9A5A00'];
+function stampHtml(cc, at) {
+  var h = cc.charCodeAt(0) * 7 + cc.charCodeAt(1) * 13;
+  return '<div class="stamp" style="--inkc:' + INKS[h % INKS.length] + ';--rot:' + ((h % 11) - 5) + 'deg"><span class="code">' + cc + '</span><span class="nm">' + esc(countryName(cc)) + '</span><span class="dt">' + esc(t('entry')) + ' ' + esc(dateStr(at)) + '</span></div>';
+}
+var fxTimer = null;
+function stampFx(cc) {
+  var fx = el('stampfx'); if (!fx) return;
+  fx.innerHTML = stampHtml(cc, S.countries[cc].at); fx.hidden = false;
+  clearTimeout(fxTimer); fxTimer = setTimeout(function () { fx.hidden = true; fx.innerHTML = ''; }, 2700);
+}
+
+/* ---- Folhas: passaporte, coleções, diário, definições ---- */
+var openTab = 'map', resetArmed = false;
+function showTab(tab) {
+  openTab = tab; resetArmed = false;
+  var btns = document.querySelectorAll('.tabs button');
+  for (var i = 0; i < btns.length; i++) btns[i].setAttribute('aria-selected', btns[i].getAttribute('data-tab') === tab ? 'true' : 'false');
+  var sh = el('sheet');
+  if (tab === 'map') { sh.classList.remove('open'); sh.setAttribute('aria-hidden', 'true'); return; }
+  if (tab === 'passport') el('badgePassport').hidden = true;
+  if (tab === 'collections') el('badgeCollections').hidden = true;
+  el('toasts').innerHTML = ''; toastKeys = {};
+  renderSheet(); sh.classList.add('open'); sh.setAttribute('aria-hidden', 'false'); el('sheetBody').scrollTop = 0;
+}
+function renderSheet() {
+  var body = el('sheetBody'), title = el('sheetTitle');
+  body.className = 'sheet-body' + (openTab === 'passport' ? ' guilloche' : '');
+  if (openTab === 'passport') { title.textContent = t('passTitle'); body.innerHTML = passportHtml(); }
+  else if (openTab === 'collections') { title.textContent = t('collTitle'); body.innerHTML = collectionsHtml(); }
+  else if (openTab === 'diary') { title.textContent = t('diaryTitle'); body.innerHTML = diaryHtml(); }
+  else if (openTab === 'settings') { title.textContent = t('setTitle'); body.innerHTML = settingsHtml(); bindSettings(); }
+}
+function passportHtml() {
+  var found = Object.keys(S.countries).sort(function (a, b) { return S.countries[a].at - S.countries[b].at; });
+  var rest = A2.filter(function (cc) { return !S.countries[cc]; }).sort(function (a, b) { return countryName(a).localeCompare(countryName(b), locale()); });
+  var mrz = ('P<PASSOS<PELO<MUNDO<<' + ('000' + found.length).slice(-3) + '<195<<<<<<<<<<<<<<<<<<<<<<<<<<<<').slice(0, 44);
+  var h = '<div class="passport-top"><div class="big">' + found.length + '</div><div class="sub">' + esc(t('passCount')) + '</div><div class="mrz">' + esc(mrz) + '</div></div>';
+  h += '<p class="lead">' + esc(t('passLead')) + '</p><div class="stamps">';
+  found.forEach(function (cc) { h += stampHtml(cc, S.countries[cc].at); });
+  rest.forEach(function (cc) { h += '<div class="slot">' + esc(countryName(cc)) + '</div>'; });
+  return h + '</div>';
+}
+function collSection(titleKey, list, store) {
+  var got = list.filter(function (q) { return store[q.id]; }), missing = list.filter(function (q) { return !store[q.id]; });
+  var h = '<h3>' + esc(t(titleKey)) + '<span>' + got.length + ' / ' + list.length + '</span></h3><ul class="items">';
+  got.sort(function (a, b) { return store[a.id].at - store[b.id].at; }).forEach(function (q) {
+    h += '<li><span>' + esc(placeName(q)) + '</span><time>' + esc(dateStr(store[q.id].at)) + '</time></li>';
+  });
+  if (missing.length) {
+    var by = {}, order = [];
+    missing.forEach(function (q) { if (!by[q.cc]) { by[q.cc] = 0; order.push(q.cc); } by[q.cc]++; });
+    h += '<li class="locked"><span>' + esc(t('locked')) + '</span><span class="meta">' + esc(order.map(function (cc) { return countryName(cc) + ' ' + by[cc]; }).join(', ')) + '</span></li>';
+  }
+  return h + '</ul>';
+}
+function collectionsHtml() {
+  var cities = POIS.filter(function (q) { return q.kind === 'city' && !q.capital; });
+  var caps = POIS.filter(function (q) { return q.kind === 'city' && q.capital; });
+  var mons = POIS.filter(function (q) { return q.kind === 'monument'; });
+  return '<p class="lead">' + esc(t('collLead')) + '</p><div class="coll">' + collSection('cities', cities, S.cities) + collSection('capitals', caps, S.cities) + collSection('monuments', mons, S.monuments) + '</div>';
+}
+function tripEnds(tr) { var a = tr.fromId && cityById(tr.fromId), b = cityById(tr.toId); return (a ? placeName(a) : t('here')) + ' → ' + (b ? placeName(b) : '?'); }
+function diaryHtml() {
+  var done = S.trips.filter(function (x) { return !x.partial; }).length;
+  var h = '<div class="stats"><div><b>' + nf(S.steps) + '</b><span>' + esc(t('stSteps')) + '</span></div><div><b>' + km(S.totalM) + '</b><span>' + esc(t('stKm')) + '</span></div>' +
+    '<div><b>' + Object.keys(S.countries).length + '</b><span>' + esc(t('stCountries')) + '</span></div><div><b>' + done + '</b><span>' + esc(t('stTrips')) + '</span></div></div>';
+  h += '<div class="coll"><h3>' + esc(t('trips')) + '</h3>';
+  if (!S.trips.length) h += '<p class="note">' + esc(t('noTrips')) + '</p>';
+  else { h += '<ul class="items">'; S.trips.slice().reverse().forEach(function (x) {
+    h += '<li><span>' + esc(tripEnds(x)) + (x.partial ? ' (' + esc(t('partial')) + ')' : '') + '</span><span class="meta">' + km(x.km * 1000) + ' km, ' + esc(dateStr(x.end)) + '</span></li>'; }); h += '</ul>'; }
+  h += '<h3>' + esc(t('events')) + '</h3>';
+  if (!S.log.length) h += '<p class="note">' + esc(t('noEvents')) + '</p>';
+  else { h += '<ul class="items">'; S.log.slice().reverse().slice(0, 60).forEach(function (e) {
+    var name = e.k === 'country' ? countryName(e.id) : (function () { for (var i = 0; i < POIS.length; i++) if (POIS[i].id === e.id) return placeName(POIS[i]); return e.id; })();
+    var key = e.k === 'country' ? 'evCountry' : e.k === 'capital' ? 'evCapital' : e.k === 'city' ? 'evCity' : 'evMonument';
+    h += '<li><span>' + esc(t(key, { name: name })) + '</span><time>' + esc(dateStr(e.t)) + '</time></li>'; }); h += '</ul>'; }
+  return h + '</div>';
+}
+function settingsHtml() {
+  var s = S.settings, h = '';
+  h += '<label class="field"><span>' + esc(t('stride')) + '<output id="oStride">' + dec(s.stride, 2) + ' m</output></span><input type="range" id="inStride" min="0.5" max="1" step="0.01" value="' + s.stride + '"></label>';
+  h += '<label class="field"><span>' + esc(t('scale')) + '</span><select id="inScale">' + SCALES.map(function (x) { return '<option value="' + x + '"' + (x === s.scale ? ' selected' : '') + '>×' + x + '</option>'; }).join('') + '</select></label>';
+  h += '<p class="note" id="scaleHint">' + esc(t('scaleHint', { m: dec(mps(), 2) })) + '</p>';
+  h += '<label class="field"><span>' + esc(t('autoSpeed')) + '</span><select id="inSpeed">' + [['real', 'spReal'], ['fast', 'spFast'], ['turbo', 'spTurbo']].map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === s.autoSpeed ? ' selected' : '') + '>' + esc(t(x[1])) + '</option>'; }).join('') + '</select></label>';
+  h += '<label class="field"><span>' + esc(t('engine')) + '</span><select id="inEngine"><option value="valhalla"' + (s.engine === 'valhalla' ? ' selected' : '') + '>' + esc(t('enValhalla')) + '</option><option value="graphhopper"' + (s.engine === 'graphhopper' ? ' selected' : '') + '>' + esc(t('enGraphhopper')) + '</option></select></label>';
+  h += '<label class="field" id="ghField"' + (s.engine === 'graphhopper' ? '' : ' hidden') + '><span>' + esc(t('ghKey')) + '</span><input type="text" id="inKey" autocomplete="off" autocapitalize="off" spellcheck="false" value="' + esc(s.ghKey) + '"></label>';
+  h += '<label class="field"><span>' + esc(t('lang')) + '</span><select id="inLang"><option value="pt"' + (S.lang === 'pt' ? ' selected' : '') + '>Português</option><option value="en"' + (S.lang === 'en' ? ' selected' : '') + '>English</option></select></label>';
+  h += '<div class="coll"><h3>' + esc(t('credits')) + '</h3><ul class="credits"><li>' + esc(t('crMap')) + ' <a href="https://maplibre.org" target="_blank" rel="noopener">maplibre.org</a></li>' +
+    '<li>' + esc(t('crTiles')) + ' <a href="https://openfreemap.org" target="_blank" rel="noopener">openfreemap.org</a>, <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">openstreetmap.org/copyright</a></li>' +
+    '<li>' + esc(t('crRoute')) + '</li><li>' + esc(t('crBorders')) + '</li></ul></div>';
+  h += '<button type="button" class="btn ' + (resetArmed ? 'danger' : 'alt') + '" id="btnReset">' + esc(t(resetArmed ? 'resetConfirm' : 'reset')) + '</button>';
+  return h;
+}
+function bindSettings() {
+  var s = S.settings;
+  el('inStride').oninput = function () { s.stride = Number(this.value); el('oStride').textContent = dec(s.stride, 2) + ' m'; el('scaleHint').textContent = t('scaleHint', { m: dec(mps(), 2) }); saveSoon(); renderHud(); };
+  el('inScale').onchange = function () { s.scale = Number(this.value); el('scaleHint').textContent = t('scaleHint', { m: dec(mps(), 2) }); saveSoon(); renderHud(); };
+  el('inSpeed').onchange = function () { s.autoSpeed = this.value; saveSoon(); };
+  el('inEngine').onchange = function () { s.engine = this.value; el('ghField').hidden = s.engine !== 'graphhopper'; saveSoon(); };
+  el('inKey').oninput = function () { s.ghKey = this.value; saveSoon(); };
+  el('inLang').onchange = function () { S.lang = this.value; saveNow(); renderAll(); };
+  el('btnReset').onclick = function () {
+    if (!resetArmed) { resetArmed = true; renderSheet(); return; }
+    stopAuto(); try { localStorage.removeItem(CFG.saveKey); localStorage.removeItem(CFG.saveKey + ':route'); } catch (e) {}
+    var lang = S.lang; S = freshState(); S.lang = lang; ROUTE = null; walkedFog = []; curFeat = null; resetArmed = false;
+    syncCountryLayer(); syncTrails(); showTab('map'); renderAll(true); toast(t('resetDone')); openPlanner();
+  };
+}
+
+/* ---- Janela de viagem ---- */
+var plan = null;
+function openPlanner() {
+  stopAuto();
+  var fromId = S.pos ? S.pos.cityId : 'lisboa', fc = fromId && cityById(fromId);
+  plan = { fromId: fromId, toId: (fc && fc.next) || (fromId === 'santarem' ? 'tomar' : 'santarem'), status: 'idle', err: null, route: null };
+  if (plan.toId === plan.fromId) plan.toId = CITIES[0].id === plan.fromId ? CITIES[1].id : CITIES[0].id;
+  renderPlanner(); el('modal').hidden = false;
+}
+function closeModal() { el('modal').hidden = true; el('card').innerHTML = ''; plan = null; }
+function originPoint() { if (S.pos) return S.pos.pt; return cityById(plan.fromId).p; }
+function renderPlanner() {
+  if (!plan) return;
+  var h = '<h2>' + esc(t('planTitle')) + '</h2>';
+  h += '<p class="note">' + esc(S.trip ? t('planChange') : t('planIntro')) + '</p>';
+  if (!S.pos) h += '<label class="field"><span>' + esc(t('from')) + '</span><select id="plFrom">' + CITIES.map(function (c) { return '<option value="' + c.id + '"' + (c.id === plan.fromId ? ' selected' : '') + '>' + esc(placeName(c)) + ', ' + esc(countryName(c.cc)) + '</option>'; }).join('') + '</select></label>';
+  else h += '<div class="field"><span>' + esc(t('from')) + '</span><div class="fixed">' + esc(posLabel()) + '</div></div>';
+  h += '<label class="field"><span>' + esc(t('to')) + '</span><select id="plTo">' + CITIES.filter(function (c) { return c.id !== plan.fromId; }).map(function (c) { return '<option value="' + c.id + '"' + (c.id === plan.toId ? ' selected' : '') + '>' + esc(placeName(c)) + ', ' + esc(countryName(c.cc)) + '</option>'; }).join('') + '</select></label>';
+  if (plan.status === 'loading') h += '<p class="note">' + esc(t('calculating')) + '</p>';
+  if (plan.status === 'error') h += '<p class="note warn">' + esc(t(plan.err)) + '</p>';
+  if (plan.status === 'ready') {
+    var r = buildRoute(plan.route.coords), steps = Math.ceil(r.total / mps());
+    h += '<div class="sum"><strong>' + esc(t('sumKm', { km: km(r.total) })) + '</strong><span>' + esc(t('sumSteps', { n: nf(steps), m: dec(mps(), 2) })) + '</span><span>' + esc(t('sumDays', { d: nf(Math.max(1, Math.ceil(steps / 8000))) })) + '</span></div>';
+    h += '<p class="note' + (plan.route.source === 'offline' ? ' warn' : '') + '">' + esc(t(plan.route.source === 'valhalla' ? 'srcValhalla' : plan.route.source === 'graphhopper' ? 'srcGraphhopper' : 'srcOffline')) + '</p>';
+    h += '<button type="button" class="btn go" id="plStart">' + esc(t('start')) + '</button>';
+    if (plan.route.source === 'offline') h += '<button type="button" class="btn alt" id="plCalc">' + esc(t('retry')) + '</button>';
+  } else {
+    h += '<button type="button" class="btn" id="plCalc"' + (plan.status === 'loading' ? ' disabled' : '') + '>' + esc(t('calc')) + '</button>';
+  }
+  if (S.pos) h += '<button type="button" class="btn alt" id="plCancel">' + esc(t('cancel')) + '</button>';
+  el('card').innerHTML = h;
+  var pf = el('plFrom'), pt = el('plTo'), pc = el('plCalc'), ps = el('plStart'), px = el('plCancel');
+  if (pf) pf.onchange = function () { plan.fromId = this.value; var c = cityById(plan.fromId); if (!plan.toPicked || plan.toId === plan.fromId) plan.toId = c.next; plan.status = 'idle'; plan.route = null; renderPlanner(); };
+  if (pt) pt.onchange = function () { plan.toId = this.value; plan.toPicked = true; plan.status = 'idle'; plan.route = null; renderPlanner(); };
+  if (pc) pc.onclick = calcRoute;
+  if (ps) ps.onclick = function () { var p = plan; closeModal(); if (!startTrip(p)) toast(t('errFailed')); };
+  if (px) px.onclick = closeModal;
+}
+function calcRoute() {
+  if (!plan || plan.status === 'loading') return;
+  var mine = plan, a = originPoint(), b = cityById(plan.toId).p;
+  plan.status = 'loading'; plan.err = null; renderPlanner();
+  fetchRoute(a, b).then(function (r) {
+    if (plan !== mine) return; plan.route = r; plan.status = 'ready'; renderPlanner();
+  }, function (e) {
+    if (plan !== mine) return;
+    var off = (S.pos ? S.pos.cityId : plan.fromId) ? offlineRoute(S.pos ? S.pos.cityId : plan.fromId, plan.toId) : null;
+    if (e && e.code === 'too_far') { plan.status = 'error'; plan.err = 'errTooFar'; }
+    else if (e && e.code === 'nokey') { plan.status = 'error'; plan.err = 'errKey'; }
+    else if (off) { plan.route = off; plan.status = 'ready'; }
+    else { plan.status = 'error'; plan.err = 'errFailed'; }
+    renderPlanner();
+  });
+}
+function showArrival(info) {
+  var h = '<h2>' + esc(t('arriveTitle', { city: info.city })) + '</h2><p class="note">' + esc(t('arriveBody', { km: info.kmTxt, n: info.steps })) + '</p>';
+  h += '<button type="button" class="btn go" id="arNext">' + esc(t('arriveNext')) + '</button><button type="button" class="btn alt" id="arStay">' + esc(t('arriveStay')) + '</button>';
+  el('card').innerHTML = h; el('modal').hidden = false;
+  el('arNext').onclick = function () { openPlanner(); };
+  el('arStay').onclick = closeModal;
+}
+
+/* ---- Caminhada automática (simulação de passos) ---- */
+var autoTimer = null, autoAcc = 0;
+function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } renderAuto(); }
+function toggleAuto() {
+  if (autoTimer) { stopAuto(); return; }
+  if (!S.trip) { openPlanner(); return; }
+  autoAcc = 0;
+  autoTimer = setInterval(function () {
+    autoAcc += (SPEEDS[S.settings.autoSpeed] || 200) / 10;
+    var n = Math.floor(autoAcc); if (n > 0) { autoAcc -= n; addSteps(n); }
+  }, 100);
+  renderAuto();
+}
+
+/* =====================================================================
+   12. ARRANQUE
+   ===================================================================== */
+function boot() {
+  S = loadState();
+  if (S.trip) { ROUTE = loadRoute(); if (!ROUTE) S.trip = null; else { S.trip.totalM = ROUTE.total; S.trip.doneM = Math.min(S.trip.doneM, ROUTE.total); walkedFog = decimate(sliceRoute(ROUTE, 0, S.trip.doneM), 120); } }
+  var adds = document.querySelectorAll('[data-add]');
+  for (var i = 0; i < adds.length; i++) adds[i].onclick = function () { addSteps(Number(this.getAttribute('data-add'))); };
+  var tabs = document.querySelectorAll('.tabs button');
+  for (var j = 0; j < tabs.length; j++) tabs[j].onclick = function () { var tb = this.getAttribute('data-tab'); showTab(openTab === tb && tb !== 'map' ? 'map' : tb); };
+  el('btnAuto').onclick = toggleAuto;
+  el('sheetClose').onclick = function () { showTab('map'); };
+  el('btnPlan').onclick = openPlanner;
+  el('btnSettings').onclick = function () { showTab(openTab === 'settings' ? 'map' : 'settings'); };
+  el('btnWorld').onclick = function () { setFollow(false); if (mapReady) map.flyTo({ center: [S.pos ? S.pos.pt[0] : 0, 25], zoom: 1.4, duration: 1200 }); };
+  el('btnFollow').onclick = function () { setFollow(!follow); };
+  el('btnFog').onclick = function () { S.settings.fog = !S.settings.fog; this.setAttribute('aria-pressed', S.settings.fog ? 'true' : 'false'); saveSoon(); drawFog(); };
+  el('modal').addEventListener('click', function (e) { if (e.target === this && S.pos) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (!el('modal').hidden && S.pos) closeModal(); else if (openTab !== 'map') showTab('map'); } });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) saveNow(); });
+  window.addEventListener('pagehide', saveNow);
+  renderAll();
+  initMap();
+  loadCountries();
+  if (!S.pos) openPlanner();
+}
+window.__passos = { state: function () { return S; }, route: function () { return ROUTE; }, addSteps: addSteps,
+  geo: { hav: hav, decodePolyline: decodePolyline, buildRoute: buildRoute, locate: locate, sliceRoute: sliceRoute, decimate: decimate, geomContains: geomContains },
+  iso: A2, n3: N3_TO_A2, offline: OFFLINE_LIS_STR, cities: CITIES, pois: POIS, cfg: CFG };
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+</body>
+</html>
