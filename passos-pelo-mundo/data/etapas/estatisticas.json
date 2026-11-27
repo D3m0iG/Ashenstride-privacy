@@ -1,13 +1,7 @@
 {
- "gerado": "2026-11-27 20:33 UTC",
- "ultimo_grupo": [
-  "UA",
-  "BY",
-  "MD",
-  "GR",
-  "CY"
- ],
- "modo": "local",
+ "gerado": "2026-11-27 20:44 UTC",
+ "ultimo_grupo": [],
+ "modo": "demo",
  "paises_no_grafo": [
   "PT",
   "ES",
@@ -53,45 +47,34 @@
   "CY"
  ],
  "nos": 7078,
- "etapas": 19616,
- "km_total": 560820,
- "bytes_desenho": 8185122,
+ "etapas": 20112,
+ "km_total": 587756,
+ "bytes_desenho": 8562855,
  "esta_corrida": {
-  "ok": 1657,
-  "barco": 19,
-  "desvio": 26
+  "ok": 496,
+  "erro": 98,
+  "barco": 32,
+  "desvio": 10
  },
- "falhadas_total": 544,
+ "falhadas_total": 638,
  "componentes": [
-  1542,
-  1142,
-  877,
+  5692,
   843,
-  811,
-  480,
-  478,
   235,
-  109,
-  106,
-  66,
   62,
   61,
-  51,
-  41
+  41,
+  16,
+  15,
+  11,
+  11,
+  8,
+  7,
+  5,
+  4,
+  4
  ],
  "grupos_isolados": [
-  [
-   "Zwickau",
-   "Zweibrücken",
-   "Zülpich",
-   "Zossen"
-  ],
-  [
-   "Zimnicea",
-   "Zărnești",
-   "Zalau",
-   "Vulcan"
-  ],
   [
    "York",
    "Yeovil",
@@ -99,46 +82,10 @@
    "Yate"
   ],
   [
-   "Sarandë",
-   "Pogradec",
-   "Librazhd",
-   "Kukes"
-  ],
-  [
-   "Lebedyn",
-   "Edinet",
-   "Ungheni",
-   "Tiraspol"
-  ],
-  [
-   "Zwolle",
-   "Zwijndrecht",
-   "Zwaag",
-   "Zutphen"
-  ],
-  [
    "Umeå",
    "Skellefteå",
    "Piteå",
    "Luleå"
-  ],
-  [
-   "Voúla",
-   "Vólos",
-   "Výronas",
-   "Vári"
-  ],
-  [
-   "Zurique",
-   "Zugo",
-   "Yverdon-les-Bains",
-   "Winterthur"
-  ],
-  [
-   "Valmiera",
-   "Ventspils",
-   "Tukums",
-   "Salaspils"
   ],
   [
    "Vittoria",
@@ -153,22 +100,10 @@
    "Newtownabbey"
   ],
   [
-   "Döbling",
-   "Wiener Neustadt",
-   "Viena",
-   "Wetzelsdorf"
-  ],
-  [
    "Vordingborg",
    "Virum",
    "Vanløse",
    "Vallensbæk"
-  ],
-  [
-   "Viby",
-   "Viburgo",
-   "Vejle",
-   "Tønder"
   ],
   [
    "Sinnai",
@@ -248,7 +183,27 @@
    "Ischia Porto",
    "Ischia",
    "Forio"
+  ],
+  [
+   "Santa Cruz de la Palma",
+   "Los Llanos de Aridane"
+  ],
+  [
+   "Maó",
+   "Ciutadella"
+  ],
+  [
+   "Bastia",
+   "Ajaccio"
+  ],
+  [
+   "Tromsø",
+   "Tromsdalen"
+  ],
+  [
+   "Mo i Rana",
+   "Bodø"
   ]
  ],
- "segundos": 27
+ "segundos": 632
 }
