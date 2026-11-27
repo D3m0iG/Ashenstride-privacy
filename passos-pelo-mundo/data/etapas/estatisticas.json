@@ -1,16 +1,8 @@
 {
- "gerado": "2026-11-27 19:17 UTC",
+ "gerado": "2026-11-27 19:36 UTC",
  "ultimo_grupo": [
-  "IT",
-  "SI",
-  "HR",
-  "BA",
-  "RS",
-  "ME",
-  "AL",
-  "MK",
-  "XK",
-  "MT"
+  "GB",
+  "IE"
  ],
  "modo": "local",
  "paises_no_grafo": [
@@ -58,32 +50,31 @@
   "CY"
  ],
  "nos": 7078,
- "etapas": 11941,
- "km_total": 294473,
- "bytes_desenho": 4840810,
+ "etapas": 14525,
+ "km_total": 344440,
+ "bytes_desenho": 5652485,
  "esta_corrida": {
-  "ok": 2508,
-  "barco": 48,
-  "desvio": 8,
-  "erro": 2
+  "ok": 2584,
+  "barco": 33,
+  "desvio": 49
  },
- "falhadas_total": 317,
+ "falhadas_total": 399,
  "componentes": [
   1542,
   1142,
+  843,
   811,
   478,
   106,
   62,
+  61,
   51,
   16,
   11,
   11,
   8,
   7,
-  5,
-  3,
-  3
+  5
  ],
  "grupos_isolados": [
   [
@@ -91,6 +82,12 @@
    "Zweibrücken",
    "Zülpich",
    "Zossen"
+  ],
+  [
+   "York",
+   "Yeovil",
+   "Yeadon",
+   "Yate"
   ],
   [
    "Sarandë",
@@ -115,6 +112,12 @@
    "Villabate",
    "Trapani",
    "Termini Imerese"
+  ],
+  [
+   "Portadown",
+   "Omagh",
+   "Newtownards",
+   "Newtownabbey"
   ],
   [
    "Döbling",
@@ -159,6 +162,12 @@
    "Caniço"
   ],
   [
+   "Sandown",
+   "Ryde",
+   "Newport",
+   "Cowes"
+  ],
+  [
    "Santa Eulalia del Río",
    "San Antonio",
    "Ibiza"
@@ -186,5 +195,5 @@
    "Ajaccio"
   ]
  ],
- "segundos": 72
+ "segundos": 70
 }
