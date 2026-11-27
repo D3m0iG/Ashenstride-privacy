@@ -309,6 +309,7 @@ for (var _i = 0; _i < ISO.length; _i += 5) { A2.push(ISO.substr(_i, 2)); N3_TO_A
 var T = {
 pt: {
   appTitle:'Passos pelo Mundo', steps:'passos', tabMap:'Mapa', tabPassport:'Passaporte', tabCollections:'Coleções', tabDiary:'Diário',
+  kCity:'Cidade', kCapital:'Capital', kMonument:'Monumento', undiscovered:'Por descobrir', straight:'{km} km em linha reta', poiHint:'O nome revela-se quando lá chegares ou passares perto.', alreadyHere:'Já estás aqui.', goThere:'Ir até lá', close:'Fechar',
   walk:'Caminhar', stop:'Parar', autoSub:'automático', here:'Posição atual',
   hudNoTrip:'Sem viagem ativa', hudPick:'Escolhe um destino', hudBank:'{n} passos guardados',
   hudDone:'{a} km feitos', hudLeft:'{b} km em falta', hudStepsLeft:'Faltam {n} passos',
@@ -346,6 +347,7 @@ pt: {
 },
 en: {
   appTitle:'Steps Around the World', steps:'steps', tabMap:'Map', tabPassport:'Passport', tabCollections:'Collections', tabDiary:'Journal',
+  kCity:'City', kCapital:'Capital', kMonument:'Monument', undiscovered:'Undiscovered', straight:'{km} km as the crow flies', poiHint:'The name is revealed when you arrive or pass nearby.', alreadyHere:'You are already here.', goThere:'Go there', close:'Close',
   walk:'Walk', stop:'Stop', autoSub:'automatic', here:'Current position',
   hudNoTrip:'No active trip', hudPick:'Pick a destination', hudBank:'{n} steps saved',
   hudDone:'{a} km done', hudLeft:'{b} km to go', hudStepsLeft:'{n} steps to go',
@@ -524,6 +526,7 @@ function km(m) { return new Intl.NumberFormat(locale(), { minimumFractionDigits:
 function dec(n, d) { return new Intl.NumberFormat(locale(), { minimumFractionDigits: d, maximumFractionDigits: d }).format(n); }
 function dateStr(ts) { try { return new Date(ts).toLocaleDateString(locale(), { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }
 function cityById(id) { for (var i = 0; i < CITIES.length; i++) if (CITIES[i].id === id) return CITIES[i]; return null; }
+function placeById(id) { var c = cityById(id); if (c) return c; for (var i = 0; i < POIS.length; i++) if (POIS[i].id === id) return POIS[i]; return null; }
 function placeName(o) { return (S.lang === 'en' && o.en) ? o.en : o.pt; }
 var dnCache = {};
 function countryName(cc) {
@@ -597,7 +600,7 @@ function discoverPoi(q) {
   setBadge('collections', true); syncPoiMarker(q);
 }
 function arrive() {
-  var tr = S.trip, dest = cityById(tr.toId);
+  var tr = S.trip, dest = placeById(tr.toId);
   stopAuto();
   S.trails.push(roundCoords(decimate(ROUTE.coords, 150)));
   S.trips.push({ fromId: tr.fromId, toId: tr.toId, km: tr.totalM / 1000, steps: tr.stepsUsed, start: tr.startedAt, end: Date.now(), source: tr.source });
@@ -727,7 +730,7 @@ function initMap() {
 
     fogCanvas = document.createElement('canvas'); fogCanvas.id = 'fog';
     var cv = map.getCanvas(); cv.parentNode.insertBefore(fogCanvas, cv.nextSibling);
-    POIS.forEach(function (q) { var e = markerEl('mk-poi', 1); poiMk[q.id] = { el: e.inner, mk: new maplibregl.Marker({ element: e.outer }).setLngLat(q.p).addTo(map) }; syncPoiMarker(q); });
+    POIS.forEach(function (q) { var e = markerEl('mk-poi', 1); e.outer.style.cursor = 'pointer'; e.outer.addEventListener('click', function (ev) { ev.stopPropagation(); openPoi(q); }); poiMk[q.id] = { el: e.inner, mk: new maplibregl.Marker({ element: e.outer }).setLngLat(q.p).addTo(map) }; syncPoiMarker(q); });
     destMk = new maplibregl.Marker({ element: markerEl('mk-dest', 2).outer }).setLngLat(start);
     player = new maplibregl.Marker({ element: markerEl('mk-player', 3).outer }).setLngLat(start);
     map.on('move', drawFog); map.on('resize', drawFog);
@@ -848,14 +851,14 @@ function renderAuto() {
   el('btnAuto').setAttribute('aria-pressed', on ? 'true' : 'false');
   el('autoLbl').textContent = on ? t('stop') : t('walk'); el('autoSub').textContent = t('autoSub');
 }
-function posLabel() { if (!S.pos) return t('appTitle'); var c = S.pos.cityId && cityById(S.pos.cityId); return c ? placeName(c) : t('here'); }
+function posLabel() { if (!S.pos) return t('appTitle'); var c = S.pos.cityId && placeById(S.pos.cityId); return c ? placeName(c) : t('here'); }
 function renderHud() {
   var tr = S.trip, pct = 0;
   if (tr && ROUTE) {
     pct = tr.totalM > 0 ? Math.min(1, tr.doneM / tr.totalM) : 0;
-    var fc = tr.fromId && cityById(tr.fromId);
+    var fc = tr.fromId && placeById(tr.fromId);
     el('hudFrom').textContent = fc ? placeName(fc) : t('here');
-    el('hudTo').textContent = placeName(cityById(tr.toId));
+    el('hudTo').textContent = placeName(placeById(tr.toId) || { pt: '?' });
     el('hudL').textContent = t('hudDone', { a: km(tr.doneM) });
     el('hudR').textContent = t('hudLeft', { b: km(tr.totalM - tr.doneM) });
     el('hudMsg').textContent = t('hudStepsLeft', { n: nf(Math.max(0, Math.ceil((tr.totalM - tr.doneM) / mps() - 1e-9))) });
@@ -940,7 +943,7 @@ function collectionsHtml() {
   var mons = POIS.filter(function (q) { return q.kind === 'monument'; });
   return '<p class="lead">' + esc(t('collLead')) + '</p><div class="coll">' + collSection('cities', cities, S.cities) + collSection('capitals', caps, S.cities) + collSection('monuments', mons, S.monuments) + '</div>';
 }
-function tripEnds(tr) { var a = tr.fromId && cityById(tr.fromId), b = cityById(tr.toId); return (a ? placeName(a) : t('here')) + ' → ' + (b ? placeName(b) : '?'); }
+function tripEnds(tr) { var a = tr.fromId && placeById(tr.fromId), b = placeById(tr.toId); return (a ? placeName(a) : t('here')) + ' → ' + (b ? placeName(b) : '?'); }
 function diaryHtml() {
   var done = S.trips.filter(function (x) { return !x.partial; }).length;
   var h = '<div class="stats"><div><b>' + nf(S.steps) + '</b><span>' + esc(t('stSteps')) + '</span></div><div><b>' + km(S.totalM) + '</b><span>' + esc(t('stKm')) + '</span></div>' +
@@ -990,12 +993,13 @@ function bindSettings() {
 
 /* ---- Janela de viagem ---- */
 var plan = null;
-function openPlanner() {
+function openPlanner(toPoi) {
   stopAuto();
-  var fromId = S.pos ? S.pos.cityId : 'lisboa', fc = fromId && cityById(fromId);
+  var fromId = S.pos ? S.pos.cityId : 'lisboa', fc = fromId && placeById(fromId);
   plan = { fromId: fromId, toId: (fc && fc.next) || (fromId === 'santarem' ? 'tomar' : 'santarem'), status: 'idle', err: null, route: null };
   if (plan.toId === plan.fromId) plan.toId = CITIES[0].id === plan.fromId ? CITIES[1].id : CITIES[0].id;
-  renderPlanner(); el('modal').hidden = false;
+  if (toPoi) { plan.toId = toPoi; plan.toPicked = true; }
+  renderPlanner(); el('modal').hidden = false; if (toPoi) calcRoute();
 }
 function closeModal() { el('modal').hidden = true; el('card').innerHTML = ''; plan = null; }
 function originPoint() { if (S.pos) return S.pos.pt; return cityById(plan.fromId).p; }
@@ -1005,7 +1009,8 @@ function renderPlanner() {
   h += '<p class="note">' + esc(S.trip ? t('planChange') : t('planIntro')) + '</p>';
   if (!S.pos) h += '<label class="field"><span>' + esc(t('from')) + '</span><select id="plFrom">' + CITIES.map(function (c) { return '<option value="' + c.id + '"' + (c.id === plan.fromId ? ' selected' : '') + '>' + esc(placeName(c)) + ', ' + esc(countryName(c.cc)) + '</option>'; }).join('') + '</select></label>';
   else h += '<div class="field"><span>' + esc(t('from')) + '</span><div class="fixed">' + esc(posLabel()) + '</div></div>';
-  h += '<label class="field"><span>' + esc(t('to')) + '</span><select id="plTo">' + CITIES.filter(function (c) { return c.id !== plan.fromId; }).map(function (c) { return '<option value="' + c.id + '"' + (c.id === plan.toId ? ' selected' : '') + '>' + esc(placeName(c)) + ', ' + esc(countryName(c.cc)) + '</option>'; }).join('') + '</select></label>';
+  var toList = CITIES.filter(function (c) { return c.id !== plan.fromId; }), extra = cityById(plan.toId) ? null : placeById(plan.toId); if (extra) toList = [extra].concat(toList);
+  h += '<label class="field"><span>' + esc(t('to')) + '</span><select id="plTo">' + toList.map(function (c) { return '<option value="' + c.id + '"' + (c.id === plan.toId ? ' selected' : '') + '>' + esc(placeName(c)) + ', ' + esc(countryName(c.cc)) + '</option>'; }).join('') + '</select></label>';
   if (plan.status === 'loading') h += '<p class="note">' + esc(t('calculating')) + '</p>';
   if (plan.status === 'error') h += '<p class="note warn">' + esc(t(plan.err)) + '</p>';
   if (plan.status === 'ready') {
@@ -1028,7 +1033,7 @@ function renderPlanner() {
 }
 function calcRoute() {
   if (!plan || plan.status === 'loading') return;
-  var mine = plan, a = originPoint(), b = cityById(plan.toId).p;
+  var mine = plan, a = originPoint(), b = placeById(plan.toId).p;
   plan.status = 'loading'; plan.err = null; renderPlanner();
   fetchRoute(a, b).then(function (r) {
     if (plan !== mine) return; plan.route = r; plan.status = 'ready'; renderPlanner();
@@ -1041,6 +1046,20 @@ function calcRoute() {
     else { plan.status = 'error'; plan.err = 'errFailed'; }
     renderPlanner();
   });
+}
+function openPoi(q) {
+  var found = (q.kind === 'city' ? S.cities : S.monuments)[q.id];
+  var here = S.pos ? S.pos.pt : null, d = here ? hav(here, q.p) : null, hereAlready = d !== null && d < 150;
+  var kind = q.kind === 'city' ? (q.capital ? t('kCapital') : t('kCity')) : t('kMonument');
+  var h = '<h2>' + esc(found ? placeName(q) : t('undiscovered')) + '</h2>';
+  h += '<p class="note">' + esc(kind + ' · ' + countryName(q.cc)) + (d !== null && !hereAlready ? ' · ' + esc(t('straight', { km: km(d) })) : '') + '</p>';
+  if (!found) h += '<p class="note">' + esc(t('poiHint')) + '</p>';
+  if (hereAlready) h += '<p class="note">' + esc(t('alreadyHere')) + '</p>';
+  else h += '<button type="button" class="btn go" id="poiGo">' + esc(t('goThere')) + '</button>';
+  h += '<button type="button" class="btn alt" id="poiClose">' + esc(t('close')) + '</button>';
+  el('card').innerHTML = h; el('modal').hidden = false; plan = null;
+  var go = el('poiGo'); if (go) go.onclick = function () { openPlanner(q.id); };
+  el('poiClose').onclick = closeModal;
 }
 function showArrival(info) {
   var h = '<h2>' + esc(t('arriveTitle', { city: info.city })) + '</h2><p class="note">' + esc(t('arriveBody', { km: info.kmTxt, n: info.steps })) + '</p>';
@@ -1076,7 +1095,7 @@ function boot() {
   for (var j = 0; j < tabs.length; j++) tabs[j].onclick = function () { var tb = this.getAttribute('data-tab'); showTab(openTab === tb && tb !== 'map' ? 'map' : tb); };
   el('btnAuto').onclick = toggleAuto;
   el('sheetClose').onclick = function () { showTab('map'); };
-  el('btnPlan').onclick = openPlanner;
+  el('btnPlan').onclick = function () { openPlanner(); };
   el('btnSettings').onclick = function () { showTab(openTab === 'settings' ? 'map' : 'settings'); };
   el('btnWorld').onclick = function () { setFollow(false); if (mapReady) map.flyTo({ center: [S.pos ? S.pos.pt[0] : 0, 25], zoom: 1.4, duration: 1200 }); };
   el('btnFollow').onclick = function () { setFollow(!follow); };
