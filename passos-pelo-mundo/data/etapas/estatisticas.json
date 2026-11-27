@@ -1,12 +1,7 @@
 {
- "gerado": "2026-11-27 18:30 UTC",
+ "gerado": "2026-11-27 18:51 UTC",
  "ultimo_grupo": [
-  "BE",
-  "NL",
-  "LU",
-  "CH",
-  "LI",
-  "AT"
+  "DE"
  ],
  "modo": "local",
  "paises_no_grafo": [
@@ -54,18 +49,18 @@
   "CY"
  ],
  "nos": 7078,
- "etapas": 6158,
- "km_total": 147576,
- "bytes_desenho": 2398100,
+ "etapas": 9433,
+ "km_total": 212829,
+ "bytes_desenho": 3448770,
  "esta_corrida": {
-  "ok": 1682,
-  "barco": 43,
-  "desvio": 22,
-  "erro": 15
+  "ok": 3275,
+  "barco": 16,
+  "desvio": 8
  },
- "falhadas_total": 235,
+ "falhadas_total": 259,
  "componentes": [
   1542,
+  1142,
   478,
   106,
   51,
@@ -78,10 +73,15 @@
   2,
   2,
   2,
-  1,
   1
  ],
  "grupos_isolados": [
+  [
+   "Zwickau",
+   "Zweibrücken",
+   "Zülpich",
+   "Zossen"
+  ],
   [
    "Zwolle",
    "Zwijndrecht",
@@ -147,5 +147,5 @@
    "Ajaccio"
   ]
  ],
- "segundos": 36
+ "segundos": 38
 }
