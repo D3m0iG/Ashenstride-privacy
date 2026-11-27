@@ -733,6 +733,7 @@ function fetchRoute(a, b) {
 var STG = null;
 function snapNode(nodes, lon, lat) { var best = -1, bd = 25000; for (var i = 0; i < nodes.length; i++) { var d = hav([lon, lat], [nodes[i][1], nodes[i][2]]); if (d < bd) { bd = d; best = i; } } return best; }
 function addStages(g, ferries) {
+  if (g.v === 2) { var ix = {}; g.nodes.forEach(function (n, i) { ix[n[0]] = i; }); g = { nodes: g.nodes, edges: g.edges.map(function (e) { return [ix[e[0]], ix[e[1]], e[2]]; }).filter(function (e) { return e[0] !== undefined && e[1] !== undefined; }) }; }
   var adj = g.nodes.map(function () { return []; }), grid = {}, ferry = {};
   g.edges.forEach(function (e) { adj[e[0]].push([e[1], e[2]]); adj[e[1]].push([e[0], e[2]]); });
   ((ferries && ferries.links) || []).forEach(function (l) {

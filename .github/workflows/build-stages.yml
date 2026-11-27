@@ -1,47 +1,109 @@
 name: Gerar etapas a pé
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'passos-pelo-mundo/tools/build_stages.py'
-      - '.github/workflows/build-stages.yml'
+    inputs:
+      grupos:
+        description: 'Grupos a calcular, separados por vírgula (iberia,franca,benelux-alpes,alemanha,italia-balcas,uk-irlanda,centro-leste,nordicos-balticos,leste-grecia) ou "todos"'
+        default: 'todos'
+      fronteiras:
+        description: 'Calcular no fim as ligações entre grupos (servidor de demonstração)'
+        type: boolean
+        default: true
 permissions:
   contents: write
 concurrency: etapas
+env:
+  TODOS: "PT ES AD FR MC BE NL LU CH LI AT DE IT SI HR BA RS ME AL MK XK MT GB IE PL CZ SK HU RO BG DK SE NO FI EE LV LT UA BY MD GR CY"
 jobs:
-  build:
+  grupo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        include:
+          - { nome: iberia,           paises: "PT ES AD",                          regioes: "europe/portugal europe/spain europe/andorra" }
+          - { nome: franca,           paises: "FR MC",                             regioes: "europe/france europe/monaco" }
+          - { nome: benelux-alpes,    paises: "BE NL LU CH LI AT",                 regioes: "europe/belgium europe/netherlands europe/luxembourg europe/switzerland europe/liechtenstein europe/austria" }
+          - { nome: alemanha,         paises: "DE",                                regioes: "europe/germany" }
+          - { nome: italia-balcas,    paises: "IT SI HR BA RS ME AL MK XK MT",     regioes: "europe/italy europe/slovenia europe/croatia europe/bosnia-herzegovina europe/serbia europe/montenegro europe/albania europe/macedonia europe/kosovo europe/malta" }
+          - { nome: uk-irlanda,       paises: "GB IE",                             regioes: "europe/great-britain europe/ireland-and-northern-ireland" }
+          - { nome: centro-leste,     paises: "PL CZ SK HU RO BG",                 regioes: "europe/poland europe/czech-republic europe/slovakia europe/hungary europe/romania europe/bulgaria" }
+          - { nome: nordicos-balticos, paises: "DK SE NO FI EE LV LT",             regioes: "europe/denmark europe/sweden europe/norway europe/finland europe/estonia europe/latvia europe/lithuania" }
+          - { nome: leste-grecia,     paises: "UA BY MD GR CY",                    regioes: "europe/ukraine europe/belarus europe/moldova europe/greece europe/cyprus" }
+    steps:
+      - name: Decidir se este grupo corre
+        id: dec
+        run: |
+          G="${{ inputs.grupos }}"
+          if [ "$G" = "todos" ] || echo ",$G," | grep -q ",${{ matrix.nome }},"; then echo run=1 >> $GITHUB_OUTPUT; else echo run=0 >> $GITHUB_OUTPUT; fi
+      - if: steps.dec.outputs.run == '1'
+        uses: actions/checkout@v4
+      - if: steps.dec.outputs.run == '1'
+        uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - if: steps.dec.outputs.run == '1'
+        run: pip install numpy scipy
+      - name: Libertar espaço em disco
+        if: steps.dec.outputs.run == '1'
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL /usr/local/share/boost || true
+          df -h / | tail -1; free -g | sed -n 2p; nproc
+      - name: Descarregar OpenStreetMap (Geofabrik)
+        if: steps.dec.outputs.run == '1'
+        run: |
+          mkdir -p vh
+          for r in ${{ matrix.regioes }}; do curl -fL --retry 4 -sS -o vh/$(basename $r).osm.pbf https://download.geofabrik.de/$r-latest.osm.pbf; done
+          ls -la vh; chmod -R 777 vh; df -h / | tail -1
+      - name: Construir o grafo do Valhalla
+        if: steps.dec.outputs.run == '1'
+        run: |
+          IMG=ghcr.io/valhalla/valhalla:latest
+          docker run --rm -u root -v $PWD/vh:/data $IMG bash -c "valhalla_build_config --mjolnir-tile-dir /data/tiles --mjolnir-concurrency 4 --service-limits-pedestrian-max-distance 400000 > /data/valhalla.json && valhalla_build_tiles -c /data/valhalla.json /data/*.osm.pbf" > build.log 2>&1 || (tail -60 build.log; exit 1)
+          tail -3 build.log; du -sh vh/tiles; rm -f vh/*.osm.pbf; df -h / | tail -1
+      - name: Arrancar o Valhalla
+        if: steps.dec.outputs.run == '1'
+        run: |
+          docker run -d --name vh -u root -p 8002:8002 -v $PWD/vh:/data ghcr.io/valhalla/valhalla:latest valhalla_service /data/valhalla.json 4
+          for i in $(seq 1 90); do curl -fs localhost:8002/status && break; sleep 2; done; echo
+          curl -fs localhost:8002/status > /dev/null || (docker logs vh | tail -40; exit 1)
+      - name: Calcular etapas do grupo
+        if: steps.dec.outputs.run == '1'
+        env:
+          PAISES: ${{ matrix.paises }}
+          MODO: local
+        run: python passos-pelo-mundo/tools/build_stages.py
+      - name: Guardar no repositório
+        if: steps.dec.outputs.run == '1'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add passos-pelo-mundo/data/etapas
+          git diff --cached --quiet || git commit -m "Etapas a pé: grupo ${{ matrix.nome }}"
+          git pull --rebase -q origin main
+          git push
+
+  fronteiras:
+    needs: grupo
+    if: always() && inputs.fronteiras
     runs-on: ubuntu-latest
     timeout-minutes: 300
-    env:
-      REGIOES: "europe/portugal europe/spain europe/andorra"
-      PAISES: "PT ES AD"
-      IMG: ghcr.io/valhalla/valhalla:latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install numpy scipy
-      - name: Descarregar OpenStreetMap (Geofabrik)
-        run: |
-          mkdir -p vh
-          for r in $REGIOES; do curl -fL --retry 3 -sS -o vh/$(basename $r).osm.pbf https://download.geofabrik.de/$r-latest.osm.pbf; done
-          ls -la vh; chmod -R 777 vh; nproc; free -g; df -h .
-      - name: Construir o grafo do Valhalla
-        run: |
-          docker run --rm -u root -v $PWD/vh:/data $IMG bash -c "valhalla_build_config --mjolnir-tile-dir /data/tiles --mjolnir-concurrency 4 --service-limits-pedestrian-max-distance 400000 > /data/valhalla.json && valhalla_build_tiles -c /data/valhalla.json /data/*.osm.pbf" > build.log 2>&1 || (tail -60 build.log; exit 1)
-          tail -5 build.log; du -sh vh/tiles
-      - name: Arrancar o Valhalla
-        run: |
-          docker run -d --name vh -u root -p 8002:8002 -v $PWD/vh:/data $IMG valhalla_service /data/valhalla.json 4
-          for i in $(seq 1 60); do curl -fs localhost:8002/status && break; sleep 2; done; echo
-          curl -fs localhost:8002/status > /dev/null || (docker logs vh | tail -40; exit 1)
-      - name: Calcular etapas
+      - name: Calcular ligações entre grupos (servidor de demonstração)
+        env:
+          PAISES: ""
+          MODO: demo
         run: python passos-pelo-mundo/tools/build_stages.py
       - name: Guardar no repositório
         run: |
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
           git add passos-pelo-mundo/data/etapas
-          git diff --cached --quiet || git commit -m "Atualiza etapas a pé"
+          git diff --cached --quiet || git commit -m "Etapas a pé: fronteiras entre grupos"
           git pull --rebase -q origin main
           git push
