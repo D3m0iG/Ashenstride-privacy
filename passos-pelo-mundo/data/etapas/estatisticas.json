@@ -1,26 +1,49 @@
 {
- "gerado": "2026-11-27 14:32 UTC",
+ "gerado": "2026-11-27 14:52 UTC",
  "paises": [
-  "PT"
+  "PT",
+  "ES",
+  "AD"
  ],
- "nos": 179,
- "candidatas": 506,
+ "nos": 916,
+ "candidatas": 2638,
  "resultado": {
-  "barco": 19,
-  "ok": 485,
-  "desvio": 2
+  "ok": 2454,
+  "barco": 106,
+  "erro": 65,
+  "desvio": 13
  },
- "etapas": 485,
- "km_total": 11624,
- "pontos": 53005,
- "bytes_desenho": 219789,
- "ficheiros": 15,
+ "etapas": 2454,
+ "km_total": 65108,
+ "pontos": 274163,
+ "bytes_desenho": 1141232,
+ "ficheiros": 82,
  "componentes": [
-  173,
+  849,
+  11,
   5,
+  3,
+  2,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
   1
  ],
  "grupos_isolados": [
+  [
+   "Palma de Maiorca",
+   "Calvià",
+   "Manacor",
+   "Marratxí",
+   "Llucmajor",
+   "Inca"
+  ],
   [
    "Funchal",
    "Câmara de Lobos",
@@ -29,8 +52,74 @@
    "Caniço"
   ],
   [
-   "Ponta Delgada"
+   "Ibiza",
+   "Santa Eulalia del Río",
+   "San Antonio"
+  ],
+  [
+   "Ciutadella",
+   "Maó"
+  ],
+  [
+   "Las Palmas"
+  ],
+  [
+   "Santa Cruz de Tenerife"
+  ],
+  [
+   "San Cristóbal de La Laguna"
+  ],
+  [
+   "Telde"
+  ],
+  [
+   "Centro"
+  ],
+  [
+   "Melilla"
+  ],
+  [
+   "Ceuta"
+  ],
+  [
+   "Arona"
+  ],
+  [
+   "Santa Lucía"
+  ],
+  [
+   "Arrecife"
+  ],
+  [
+   "San Bartolomé de Tirajana"
+  ],
+  [
+   "Adeje"
+  ],
+  [
+   "La Orotava"
+  ],
+  [
+   "Granadilla de Abona"
+  ],
+  [
+   "Los Realejos"
+  ],
+  [
+   "Arucas"
+  ],
+  [
+   "Maspalomas"
+  ],
+  [
+   "Realejo Alto"
+  ],
+  [
+   "Puerto del Rosario"
+  ],
+  [
+   "Puerto de la Cruz"
   ]
  ],
- "segundos": 11
+ "segundos": 42
 }
