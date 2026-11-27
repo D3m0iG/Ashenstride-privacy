@@ -1,7 +1,14 @@
 {
- "gerado": "2026-11-27 18:04 UTC",
- "ultimo_grupo": [],
- "modo": "demo",
+ "gerado": "2026-11-27 18:30 UTC",
+ "ultimo_grupo": [
+  "BE",
+  "NL",
+  "LU",
+  "CH",
+  "LI",
+  "AT"
+ ],
+ "modo": "local",
  "paises_no_grafo": [
   "PT",
   "ES",
@@ -47,17 +54,21 @@
   "CY"
  ],
  "nos": 7078,
- "etapas": 4476,
- "km_total": 119917,
- "bytes_desenho": 1936333,
+ "etapas": 6158,
+ "km_total": 147576,
+ "bytes_desenho": 2398100,
  "esta_corrida": {
-  "barco": 7,
-  "erro": 29,
-  "ok": 50
+  "ok": 1682,
+  "barco": 43,
+  "desvio": 22,
+  "erro": 15
  },
- "falhadas_total": 155,
+ "falhadas_total": 235,
  "componentes": [
   1542,
+  478,
+  106,
+  51,
   11,
   11,
   8,
@@ -68,12 +79,27 @@
   2,
   2,
   1,
-  1,
-  1,
-  1,
   1
  ],
  "grupos_isolados": [
+  [
+   "Zwolle",
+   "Zwijndrecht",
+   "Zwaag",
+   "Zutphen"
+  ],
+  [
+   "Zurique",
+   "Zugo",
+   "Yverdon-les-Bains",
+   "Winterthur"
+  ],
+  [
+   "Döbling",
+   "Wiener Neustadt",
+   "Viena",
+   "Wetzelsdorf"
+  ],
   [
    "Son Rapinya",
    "Pollença",
@@ -121,5 +147,5 @@
    "Ajaccio"
   ]
  ],
- "segundos": 82
+ "segundos": 36
 }
