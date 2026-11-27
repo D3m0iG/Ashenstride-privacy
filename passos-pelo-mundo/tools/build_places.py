@@ -96,12 +96,14 @@ def build_monuments():
                 found[qid] = [qid, pt or en, en or pt, one(b, 'cc') or '', round(lon, 4), round(lat, 4), int(one(b, 'sl')), label]
                 n += 1
         print('  %-20s +%d' % (label, n)); time.sleep(3); return n
-    run('UNESCO', '?item wdt:P1435 wd:Q9259 .', 0)
+    counts = {}
+    counts['UNESCO'] = run('UNESCO', '?item wdt:P1435 wd:Q9259 .', 12)
     for qid, nome in CLASSES.items():
-        run(nome, '?item wdt:P31 wd:%s .' % qid, 45)
-    out = sorted(found.values(), key=lambda x: -x[6])[:8000]
+        counts[nome] = run(nome, '?item wdt:P31 wd:%s .' % qid, 30)
+    out = sorted(found.values(), key=lambda x: -x[6])[:6000]
     json.dump(out, open(os.path.join(OUT, 'monumentos.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('  escrito monumentos.json:', len(out))
+    json.dump(counts, open(os.path.join(OUT, 'monumentos_por_classe.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     return out
 
 if __name__ == '__main__':
