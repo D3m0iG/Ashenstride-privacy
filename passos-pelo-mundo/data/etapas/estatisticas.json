@@ -1,13 +1,11 @@
 {
- "gerado": "2026-11-27 20:23 UTC",
+ "gerado": "2026-11-27 20:33 UTC",
  "ultimo_grupo": [
-  "DK",
-  "SE",
-  "NO",
-  "FI",
-  "EE",
-  "LV",
-  "LT"
+  "UA",
+  "BY",
+  "MD",
+  "GR",
+  "CY"
  ],
  "modo": "local",
  "paises_no_grafo": [
@@ -55,30 +53,31 @@
   "CY"
  ],
  "nos": 7078,
- "etapas": 17959,
- "km_total": 483144,
- "bytes_desenho": 7390141,
+ "etapas": 19616,
+ "km_total": 560820,
+ "bytes_desenho": 8185122,
  "esta_corrida": {
-  "ok": 947,
-  "barco": 78
+  "ok": 1657,
+  "barco": 19,
+  "desvio": 26
  },
- "falhadas_total": 499,
+ "falhadas_total": 544,
  "componentes": [
   1542,
   1142,
   877,
   843,
   811,
+  480,
   478,
   235,
+  109,
   106,
   66,
   62,
   61,
   51,
-  41,
-  27,
-  16
+  41
  ],
  "grupos_isolados": [
   [
@@ -106,6 +105,12 @@
    "Kukes"
   ],
   [
+   "Lebedyn",
+   "Edinet",
+   "Ungheni",
+   "Tiraspol"
+  ],
+  [
    "Zwolle",
    "Zwijndrecht",
    "Zwaag",
@@ -116,6 +121,12 @@
    "Skellefteå",
    "Piteå",
    "Luleå"
+  ],
+  [
+   "Voúla",
+   "Vólos",
+   "Výronas",
+   "Vári"
   ],
   [
    "Zurique",
@@ -166,6 +177,12 @@
    "Quartu Sant'Elena"
   ],
   [
+   "Protaras",
+   "Germasógeia",
+   "Stróvolos",
+   "Pafos"
+  ],
+  [
    "Son Rapinya",
    "Pollença",
    "Palma de Maiorca",
@@ -208,6 +225,11 @@
    "Ytrebygda"
   ],
   [
+   "Rethymno",
+   "Chania",
+   "Iráclio"
+  ],
+  [
    "Santa Eulalia del Río",
    "San Antonio",
    "Ibiza"
@@ -226,23 +248,7 @@
    "Ischia Porto",
    "Ischia",
    "Forio"
-  ],
-  [
-   "Santa Cruz de la Palma",
-   "Los Llanos de Aridane"
-  ],
-  [
-   "Maó",
-   "Ciutadella"
-  ],
-  [
-   "Bastia",
-   "Ajaccio"
-  ],
-  [
-   "Tromsø",
-   "Tromsdalen"
   ]
  ],
- "segundos": 44
+ "segundos": 27
 }
