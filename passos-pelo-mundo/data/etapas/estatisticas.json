@@ -1,13 +1,7 @@
 {
- "gerado": "2026-11-27 23:37 UTC",
- "ultimo_grupo": [
-  "UA",
-  "BY",
-  "MD",
-  "GR",
-  "CY"
- ],
- "modo": "local",
+ "gerado": "2026-11-27 23:41 UTC",
+ "ultimo_grupo": [],
+ "modo": "demo",
  "paises_no_grafo": [
   "PT",
   "ES",
@@ -57,11 +51,9 @@
  "km_total": 606501,
  "bytes_desenho": 8770302,
  "esta_corrida": {
-  "ok": 19,
-  "barco": 13,
-  "desvio": 4
+  "erro": 252
  },
- "falhadas_total": 690,
+ "falhadas_total": 844,
  "componentes": [
   5692,
   843,
@@ -201,5 +193,5 @@
    "Bodø"
   ]
  ],
- "segundos": 9
+ "segundos": 248
 }
