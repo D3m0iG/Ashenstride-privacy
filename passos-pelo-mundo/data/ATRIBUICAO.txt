@@ -1,0 +1,2 @@
+Cidades: GeoNames (https://www.geonames.org), licença CC BY 4.0.
+Monumentos: Wikidata (https://www.wikidata.org), CC0.
