@@ -1,23 +1,66 @@
 {
- "gerado": "2026-11-27 14:52 UTC",
- "paises": [
+ "gerado": "2026-11-27 16:31 UTC",
+ "ultimo_grupo": [
   "PT",
   "ES",
   "AD"
  ],
- "nos": 916,
- "candidatas": 2638,
- "resultado": {
-  "ok": 2454,
+ "modo": "local",
+ "paises_no_grafo": [
+  "PT",
+  "ES",
+  "AD",
+  "FR",
+  "MC",
+  "BE",
+  "NL",
+  "LU",
+  "CH",
+  "LI",
+  "AT",
+  "DE",
+  "IT",
+  "SI",
+  "HR",
+  "BA",
+  "RS",
+  "ME",
+  "AL",
+  "MK",
+  "XK",
+  "MT",
+  "GB",
+  "IE",
+  "PL",
+  "CZ",
+  "SK",
+  "HU",
+  "RO",
+  "BG",
+  "DK",
+  "SE",
+  "NO",
+  "FI",
+  "EE",
+  "LV",
+  "LT",
+  "UA",
+  "BY",
+  "MD",
+  "GR",
+  "CY"
+ ],
+ "nos": 7078,
+ "etapas": 2452,
+ "km_total": 64761,
+ "bytes_desenho": 1134021,
+ "esta_corrida": {
+  "ok": 2452,
   "barco": 106,
-  "erro": 65,
-  "desvio": 13
+  "desvio": 13,
+  "erro": 65
  },
- "etapas": 2454,
- "km_total": 65108,
- "pontos": 274163,
- "bytes_desenho": 1141232,
- "ficheiros": 82,
+ "falhadas_total": 184,
  "componentes": [
   849,
   11,
@@ -37,89 +80,26 @@
  ],
  "grupos_isolados": [
   [
+   "Son Rapinya",
+   "Pollença",
    "Palma de Maiorca",
-   "Calvià",
-   "Manacor",
-   "Marratxí",
-   "Llucmajor",
-   "Inca"
+   "Marratxí"
   ],
   [
-   "Funchal",
-   "Câmara de Lobos",
    "São Martinho",
    "Santo António",
+   "Funchal",
    "Caniço"
   ],
   [
-   "Ibiza",
    "Santa Eulalia del Río",
-   "San Antonio"
+   "San Antonio",
+   "Ibiza"
   ],
   [
-   "Ciutadella",
-   "Maó"
-  ],
-  [
-   "Las Palmas"
-  ],
-  [
-   "Santa Cruz de Tenerife"
-  ],
-  [
-   "San Cristóbal de La Laguna"
-  ],
-  [
-   "Telde"
-  ],
-  [
-   "Centro"
-  ],
-  [
-   "Melilla"
-  ],
-  [
-   "Ceuta"
-  ],
-  [
-   "Arona"
-  ],
-  [
-   "Santa Lucía"
-  ],
-  [
-   "Arrecife"
-  ],
-  [
-   "San Bartolomé de Tirajana"
-  ],
-  [
-   "Adeje"
-  ],
-  [
-   "La Orotava"
-  ],
-  [
-   "Granadilla de Abona"
-  ],
-  [
-   "Los Realejos"
-  ],
-  [
-   "Arucas"
-  ],
-  [
-   "Maspalomas"
-  ],
-  [
-   "Realejo Alto"
-  ],
-  [
-   "Puerto del Rosario"
-  ],
-  [
-   "Puerto de la Cruz"
+   "Maó",
+   "Ciutadella"
   ]
  ],
- "segundos": 42
+ "segundos": 30
 }
