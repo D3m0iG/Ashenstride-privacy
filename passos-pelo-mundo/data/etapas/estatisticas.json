@@ -1,9 +1,8 @@
 {
- "gerado": "2026-11-27 16:31 UTC",
+ "gerado": "2026-11-27 18:01 UTC",
  "ultimo_grupo": [
-  "PT",
-  "ES",
-  "AD"
+  "FR",
+  "MC"
  ],
  "modo": "local",
  "paises_no_grafo": [
@@ -51,24 +50,22 @@
   "CY"
  ],
  "nos": 7078,
- "etapas": 2452,
- "km_total": 64761,
- "bytes_desenho": 1134021,
+ "etapas": 4426,
+ "km_total": 118132,
+ "bytes_desenho": 1897754,
  "esta_corrida": {
-  "ok": 2452,
-  "barco": 106,
-  "desvio": 13,
-  "erro": 65
+  "ok": 1974,
+  "erro": 1
  },
- "falhadas_total": 184,
+ "falhadas_total": 185,
  "componentes": [
   849,
+  692,
   11,
   5,
   3,
   2,
-  1,
-  1,
+  2,
   1,
   1,
   1,
@@ -79,6 +76,12 @@
   1
  ],
  "grupos_isolados": [
+  [
+   "Yerres",
+   "Wittenheim",
+   "Wattrelos",
+   "Wasquehal"
+  ],
   [
    "Son Rapinya",
    "Pollença",
@@ -99,7 +102,11 @@
   [
    "Maó",
    "Ciutadella"
+  ],
+  [
+   "Bastia",
+   "Ajaccio"
   ]
  ],
- "segundos": 30
+ "segundos": 57
 }
