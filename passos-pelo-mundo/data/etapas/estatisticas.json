@@ -1,8 +1,12 @@
 {
- "gerado": "2026-11-27 23:44 UTC",
+ "gerado": "2026-11-27 23:53 UTC",
  "ultimo_grupo": [
-  "PT",
-  "ES"
+  "MA",
+  "DZ",
+  "TN",
+  "LY",
+  "EG",
+  "MR"
  ],
  "modo": "local",
  "paises_no_grafo": [
@@ -103,32 +107,39 @@
   "CY"
  ],
  "nos": 11104,
- "etapas": 20179,
- "km_total": 606501,
- "bytes_desenho": 8770302,
+ "etapas": 22702,
+ "km_total": 752093,
+ "bytes_desenho": 10258301,
  "esta_corrida": {
-  "erro": 43,
-  "barco": 15
+  "ok": 2523,
+  "desvio": 67,
+  "barco": 32
  },
- "falhadas_total": 847,
+ "falhadas_total": 946,
  "componentes": [
   5692,
+  897,
   843,
   247,
   62,
   61,
   41,
+  25,
   16,
   15,
   11,
   11,
   8,
   7,
-  5,
-  4,
-  4
+  5
  ],
  "grupos_isolados": [
+  [
+   "Tobruk",
+   "Qaryat Sulūq",
+   "Derna",
+   "Bengasi"
+  ],
   [
    "York",
    "Yeovil",
@@ -158,6 +169,12 @@
    "Virum",
    "Vanløse",
    "Vallensbæk"
+  ],
+  [
+   "Zouerat",
+   "Tembedgha",
+   "Tékane",
+   "Selibaby"
   ],
   [
    "Sinnai",
@@ -202,6 +219,12 @@
    "Caniço"
   ],
   [
+   "Porto Said",
+   "Al-Manākh",
+   "Aḍ-Ḍawāḥy",
+   "Az-Zuhūr"
+  ],
+  [
    "Sandown",
    "Ryde",
    "Newport",
@@ -234,6 +257,10 @@
    "Forio"
   ],
   [
+   "At Tāj",
+   "Al Jawf"
+  ],
+  [
    "Santa Cruz de la Palma",
    "Los Llanos de Aridane"
   ],
@@ -250,5 +277,5 @@
    "Bodø"
   ]
  ],
- "segundos": 1
+ "segundos": 50
 }
