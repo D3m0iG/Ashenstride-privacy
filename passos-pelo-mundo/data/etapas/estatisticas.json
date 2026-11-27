@@ -1,12 +1,13 @@
 {
- "gerado": "2026-11-27 23:02 UTC",
+ "gerado": "2026-11-27 23:26 UTC",
  "ultimo_grupo": [
-  "PL",
-  "CZ",
-  "SK",
-  "HU",
-  "RO",
-  "BG"
+  "DK",
+  "SE",
+  "NO",
+  "FI",
+  "EE",
+  "LV",
+  "LT"
  ],
  "modo": "local",
  "paises_no_grafo": [
@@ -54,17 +55,18 @@
   "CY"
  ],
  "nos": 7078,
- "etapas": 20113,
- "km_total": 587971,
- "bytes_desenho": 8565624,
+ "etapas": 20160,
+ "km_total": 601204,
+ "bytes_desenho": 8728126,
  "esta_corrida": {
-  "ok": 1
+  "ok": 47,
+  "barco": 35
  },
- "falhadas_total": 638,
+ "falhadas_total": 673,
  "componentes": [
   5692,
   843,
-  235,
+  247,
   62,
   61,
   41,
@@ -179,11 +181,6 @@
    "La Oliva"
   ],
   [
-   "Trondheim",
-   "Stjørdalshalsen",
-   "Levanger"
-  ],
-  [
    "Ischia Porto",
    "Ischia",
    "Forio"
@@ -201,13 +198,9 @@
    "Ajaccio"
   ],
   [
-   "Tromsø",
-   "Tromsdalen"
-  ],
-  [
    "Mo i Rana",
    "Bodø"
   ]
  ],
- "segundos": 0
+ "segundos": 25
 }
