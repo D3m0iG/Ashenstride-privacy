@@ -739,7 +739,8 @@ function addStages(g, ferries) {
   ((ferries && ferries.links) || []).forEach(function (l) {
     var a = snapNode(g.nodes, l[1][0], l[1][1]), b = snapNode(g.nodes, l[3][0], l[3][1]);
     if (a < 0 || b < 0 || a === b) return;
-    adj[a].push([b, 20000]); adj[b].push([a, 20000]); ferry[Math.min(a, b) + '-' + Math.max(a, b)] = true;
+    var fw = Math.max(20000, 0.5 * hav([g.nodes[a][1], g.nodes[a][2]], [g.nodes[b][1], g.nodes[b][2]])); // custo só para escolher o caminho: prefere terra quando é comparável
+    adj[a].push([b, fw]); adj[b].push([a, fw]); ferry[Math.min(a, b) + '-' + Math.max(a, b)] = true;
   });
   g.nodes.forEach(function (n, i) { if (!adj[i].length) return; var k = Math.floor(n[1]) + ',' + Math.floor(n[2]); (grid[k] || (grid[k] = [])).push(i); });
   STG = { nodes: g.nodes, adj: adj, grid: grid, ferry: ferry, chunks: (STG && STG.chunks) || {} };
