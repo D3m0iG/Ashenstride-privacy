@@ -1,0 +1,47 @@
+name: Gerar etapas a pé
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'passos-pelo-mundo/tools/build_stages.py'
+      - '.github/workflows/build-stages.yml'
+permissions:
+  contents: write
+concurrency: etapas
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      REGIOES: "europe/portugal"
+      PAISES: "PT"
+      IMG: ghcr.io/valhalla/valhalla:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install numpy scipy
+      - name: Descarregar OpenStreetMap (Geofabrik)
+        run: |
+          mkdir -p vh
+          for r in $REGIOES; do curl -fL --retry 3 -sS -o vh/$(basename $r).osm.pbf https://download.geofabrik.de/$r-latest.osm.pbf; done
+          ls -la vh; chmod -R 777 vh; nproc; free -g; df -h .
+      - name: Construir o grafo do Valhalla
+        run: |
+          docker run --rm -u root -v $PWD/vh:/data $IMG bash -c "valhalla_build_config --mjolnir-tile-dir /data/tiles --mjolnir-concurrency 4 --service-limits-pedestrian-max-distance 400000 > /data/valhalla.json && valhalla_build_tiles -c /data/valhalla.json /data/*.osm.pbf" > build.log 2>&1 || (tail -60 build.log; exit 1)
+          tail -5 build.log; du -sh vh/tiles
+      - name: Arrancar o Valhalla
+        run: |
+          docker run -d --name vh -u root -p 8002:8002 -v $PWD/vh:/data $IMG valhalla_service /data/valhalla.json 4
+          for i in $(seq 1 60); do curl -fs localhost:8002/status && break; sleep 2; done; echo
+          curl -fs localhost:8002/status > /dev/null || (docker logs vh | tail -40; exit 1)
+      - name: Calcular etapas
+        run: python passos-pelo-mundo/tools/build_stages.py
+      - name: Guardar no repositório
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add passos-pelo-mundo/data/etapas
+          git diff --cached --quiet || git commit -m "Atualiza etapas a pé"
+          git pull --rebase -q origin main
+          git push
