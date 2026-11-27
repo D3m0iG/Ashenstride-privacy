@@ -28,6 +28,11 @@ PAIRS = [
  ('Piraeus','GR','Irákleion','GR'), ('Piraeus','GR','Chania','GR'), ('Piraeus','GR','Rhodes','GR'), ('Piraeus','GR','Chios','GR'),
  ('Piraeus','GR','Mytilene','GR'), ('Piraeus','GR','Kos','GR'), ('Rhodes','GR','Limassol','CY'),
  ('Santa Cruz de Tenerife','ES','Santa Cruz de la Palma','ES'),
+ # Europa–África e Mediterrâneo sul
+ ('Algeciras','ES','Tangier','MA'), ('Barcelona','ES','Tangier','MA'), ('Almería','ES','Nador','MA'),
+ ('Marseille','FR','Algiers','DZ'), ('Marseille','FR','Tunis','TN'), ('Genoa','IT','Tunis','TN'), ('Palermo','IT','Tunis','TN'),
+ ('Civitavecchia','IT','Tunis','TN'), ('Alicante','ES','Oran','DZ'), ('Alicante','ES','Algiers','DZ'), ('Piraeus','GR','Alexandria','EG'),
+ ('Valletta','MT','Tripoli','LY'), ('Bergen','NO','Newcastle upon Tyne','GB'),
 ]
 def find(name, cc):
     n = name.lower(); best = None
