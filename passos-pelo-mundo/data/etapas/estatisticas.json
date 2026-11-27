@@ -1,12 +1,13 @@
 {
- "gerado": "2026-11-27 20:00 UTC",
+ "gerado": "2026-11-27 20:23 UTC",
  "ultimo_grupo": [
-  "PL",
-  "CZ",
-  "SK",
-  "HU",
-  "RO",
-  "BG"
+  "DK",
+  "SE",
+  "NO",
+  "FI",
+  "EE",
+  "LV",
+  "LT"
  ],
  "modo": "local",
  "paises_no_grafo": [
@@ -54,15 +55,14 @@
   "CY"
  ],
  "nos": 7078,
- "etapas": 17012,
- "km_total": 438077,
- "bytes_desenho": 6848353,
+ "etapas": 17959,
+ "km_total": 483144,
+ "bytes_desenho": 7390141,
  "esta_corrida": {
-  "ok": 2487,
-  "barco": 16,
-  "desvio": 6
+  "ok": 947,
+  "barco": 78
  },
- "falhadas_total": 421,
+ "falhadas_total": 499,
  "componentes": [
   1542,
   1142,
@@ -70,15 +70,15 @@
   843,
   811,
   478,
+  235,
   106,
+  66,
   62,
   61,
   51,
-  16,
-  11,
-  11,
-  8,
-  7
+  41,
+  27,
+  16
  ],
  "grupos_isolados": [
   [
@@ -112,10 +112,22 @@
    "Zutphen"
   ],
   [
+   "Umeå",
+   "Skellefteå",
+   "Piteå",
+   "Luleå"
+  ],
+  [
    "Zurique",
    "Zugo",
    "Yverdon-les-Bains",
    "Winterthur"
+  ],
+  [
+   "Valmiera",
+   "Ventspils",
+   "Tukums",
+   "Salaspils"
   ],
   [
    "Vittoria",
@@ -134,6 +146,18 @@
    "Wiener Neustadt",
    "Viena",
    "Wetzelsdorf"
+  ],
+  [
+   "Vordingborg",
+   "Virum",
+   "Vanløse",
+   "Vallensbæk"
+  ],
+  [
+   "Viby",
+   "Viburgo",
+   "Vejle",
+   "Tønder"
   ],
   [
    "Sinnai",
@@ -178,6 +202,12 @@
    "Cowes"
   ],
   [
+   "Nesttun",
+   "Bergen",
+   "Åsane",
+   "Ytrebygda"
+  ],
+  [
    "Santa Eulalia del Río",
    "San Antonio",
    "Ibiza"
@@ -186,6 +216,11 @@
    "Puerto del Rosario",
    "Pájara",
    "La Oliva"
+  ],
+  [
+   "Trondheim",
+   "Stjørdalshalsen",
+   "Levanger"
   ],
   [
    "Ischia Porto",
@@ -203,7 +238,11 @@
   [
    "Bastia",
    "Ajaccio"
+  ],
+  [
+   "Tromsø",
+   "Tromsdalen"
   ]
  ],
- "segundos": 36
+ "segundos": 44
 }
