@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       grupos:
-        description: 'Grupos a calcular, separados por vírgula (iberia,franca,...,leste-grecia,ilhas-atlanticas,africa-norte,africa-oeste,africa-centro-leste,africa-sul) ou "todos"'
+        description: 'Grupos a calcular, separados por vírgula (iberia,franca,...,leste-grecia,ilhas-atlanticas,africa-norte,africa-oeste,africa-centro-leste,africa-sul,asia-medio-oriente-a,asia-medio-oriente-b) ou "todos"'
         default: 'todos'
       max_km:
         description: 'Distância máxima de cada etapa em km (150 por omissão; 300 para zonas esparsas como o Norte)'
@@ -16,7 +16,7 @@ permissions:
   contents: write
 concurrency: etapas
 env:
-  TODOS: "MA DZ TN LY EG MR SN GM GW GN SL LR CI GH TG BJ NG BF ML NE CV CM TD CF GA GQ CG CD AO SD SS ET ER DJ SO KE UG RW BI TZ ZM MW MZ ZW BW NA ZA LS SZ MG MU KM SC PT ES AD FR MC BE NL LU CH LI AT DE IT SI HR BA RS ME AL MK XK MT GB IE PL CZ SK HU RO BG DK SE NO FI EE LV LT UA BY MD GR CY"
+  TODOS: "MA DZ TN LY EG MR SN GM GW GN SL LR CI GH TG BJ NG BF ML NE CV CM TD CF GA GQ CG CD AO SD SS ET ER DJ SO KE UG RW BI TZ ZM MW MZ ZW BW NA ZA LS SZ MG MU KM SC PT ES AD FR MC BE NL LU CH LI AT DE IT SI HR BA RS ME AL MK XK MT GB IE PL CZ SK HU RO BG DK SE NO FI EE LV LT UA BY MD GR CY TR GE AM AZ IL PS LB SY JO IQ IR SA AE QA BH KW OM YE"
 jobs:
   grupo:
     runs-on: ubuntu-latest
@@ -40,6 +40,8 @@ jobs:
           - { nome: africa-oeste,     paises: "SN GM GW GN SL LR CI GH TG BJ NG BF ML NE CV", regioes: "africa/senegal-and-gambia africa/guinea-bissau africa/guinea africa/sierra-leone africa/liberia africa/ivory-coast africa/ghana africa/togo africa/benin africa/nigeria africa/burkina-faso africa/mali africa/niger africa/cape-verde" }
           - { nome: africa-centro-leste, paises: "CM TD CF GA GQ CG CD AO SD SS ET ER DJ SO KE UG RW BI TZ", regioes: "africa/cameroon africa/chad africa/central-african-republic africa/gabon africa/equatorial-guinea africa/congo-brazzaville africa/congo-democratic-republic africa/angola africa/sudan africa/south-sudan africa/ethiopia africa/eritrea africa/djibouti africa/somalia africa/kenya africa/uganda africa/rwanda africa/burundi africa/tanzania" }
           - { nome: africa-sul,       paises: "ZM MW MZ ZW BW NA ZA LS SZ MG MU KM SC", regioes: "africa/zambia africa/malawi africa/mozambique africa/zimbabwe africa/botswana africa/namibia africa/south-africa-and-lesotho africa/swaziland africa/madagascar africa/mauritius africa/comores africa/seychelles" }
+          - { nome: asia-medio-oriente-a, paises: "TR GE AM AZ IL PS LB SY JO", regioes: "europe/turkey europe/georgia asia/armenia asia/azerbaijan asia/israel-and-palestine asia/lebanon asia/syria asia/jordan" }
+          - { nome: asia-medio-oriente-b, paises: "IQ IR SA AE QA BH KW OM YE", regioes: "asia/iraq asia/iran asia/gcc-states asia/yemen" }
     steps:
       - name: Decidir se este grupo corre
         id: dec
@@ -63,7 +65,7 @@ jobs:
         if: steps.dec.outputs.run == '1'
         run: |
           mkdir -p vh
-          for r in ${{ matrix.regioes }}; do curl -fL --retry 4 -sS -o vh/$(basename $r).osm.pbf https://download.geofabrik.de/$r-latest.osm.pbf; done
+          for r in ${{ matrix.regioes }}; do curl -fL --retry 6 --retry-delay 15 --retry-all-errors -sS -o vh/$(basename $r).osm.pbf https://download.geofabrik.de/$r-latest.osm.pbf; done
           ls -la vh; chmod -R 777 vh; df -h / | tail -1
       - name: Construir o grafo do Valhalla
         if: steps.dec.outputs.run == '1'
