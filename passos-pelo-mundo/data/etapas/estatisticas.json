@@ -1,23 +1,7 @@
 {
- "gerado": "2026-11-28 04:02 UTC",
- "ultimo_grupo": [
-  "SN",
-  "GM",
-  "GW",
-  "GN",
-  "SL",
-  "LR",
-  "CI",
-  "GH",
-  "TG",
-  "BJ",
-  "NG",
-  "BF",
-  "ML",
-  "NE",
-  "CV"
- ],
- "modo": "local",
+ "gerado": "2026-11-28 04:11 UTC",
+ "ultimo_grupo": [],
+ "modo": "demo",
  "paises_no_grafo": [
   "MA",
   "DZ",
@@ -116,20 +100,19 @@
   "CY"
  ],
  "nos": 11104,
- "etapas": 30954,
- "km_total": 1530323,
- "bytes_desenho": 18526314,
+ "etapas": 30981,
+ "km_total": 1532956,
+ "bytes_desenho": 18559424,
  "esta_corrida": {
-  "ok": 2789,
-  "barco": 126,
-  "erro": 26,
-  "desvio": 19
+  "erro": 423,
+  "ok": 27,
+  "desvio": 2,
+  "barco": 12
  },
- "falhadas_total": 1613,
+ "falhadas_total": 1660,
  "componentes": [
   5692,
-  1899,
-  1008,
+  2933,
   899,
   843,
   247,
@@ -137,10 +120,11 @@
   62,
   61,
   41,
-  25,
   16,
   15,
   14,
+  11,
+  11,
   11
  ],
  "grupos_isolados": [
@@ -149,12 +133,6 @@
    "Tog Wajaale",
    "Zeila",
    "Ruqi"
-  ],
-  [
-   "Ziguinchor",
-   "Yoff",
-   "Vélingara",
-   "Touba"
   ],
   [
    "Tobruk",
@@ -197,12 +175,6 @@
    "Virum",
    "Vanløse",
    "Vallensbæk"
-  ],
-  [
-   "Zouerat",
-   "Tembedgha",
-   "Tékane",
-   "Selibaby"
   ],
   [
    "Sinnai",
@@ -310,7 +282,15 @@
    "Ischia Porto",
    "Ischia",
    "Forio"
+  ],
+  [
+   "At Tāj",
+   "Al Jawf"
+  ],
+  [
+   "Nansio",
+   "Muriti"
   ]
  ],
- "segundos": 81
+ "segundos": 460
 }
