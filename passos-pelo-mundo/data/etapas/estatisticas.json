@@ -1,25 +1,19 @@
 {
- "gerado": "2026-11-28 00:22 UTC",
+ "gerado": "2026-11-28 00:36 UTC",
  "ultimo_grupo": [
-  "CM",
-  "TD",
-  "CF",
-  "GA",
-  "GQ",
-  "CG",
-  "CD",
-  "AO",
-  "SD",
-  "SS",
-  "ET",
-  "ER",
-  "DJ",
-  "SO",
-  "KE",
-  "UG",
-  "RW",
-  "BI",
-  "TZ"
+  "ZM",
+  "MW",
+  "MZ",
+  "ZW",
+  "BW",
+  "NA",
+  "ZA",
+  "LS",
+  "SZ",
+  "MG",
+  "MU",
+  "KM",
+  "SC"
  ],
  "modo": "local",
  "paises_no_grafo": [
@@ -120,32 +114,32 @@
   "CY"
  ],
  "nos": 11104,
- "etapas": 26308,
- "km_total": 1135909,
- "bytes_desenho": 14618383,
+ "etapas": 28109,
+ "km_total": 1322541,
+ "bytes_desenho": 16487642,
  "esta_corrida": {
-  "ok": 3606,
-  "barco": 191,
-  "erro": 96,
-  "desvio": 55
+  "ok": 1801,
+  "erro": 11,
+  "barco": 70,
+  "desvio": 21
  },
- "falhadas_total": 1288,
+ "falhadas_total": 1390,
  "componentes": [
   5692,
   1340,
   897,
   843,
+  559,
   247,
+  97,
   62,
   61,
   41,
   25,
   16,
   15,
-  11,
-  11,
-  11,
-  8
+  14,
+  11
  ],
  "grupos_isolados": [
   [
@@ -167,10 +161,22 @@
    "Yate"
   ],
   [
+   "Nchelenge",
+   "Nakonde",
+   "Mpulungu",
+   "Mporokoso"
+  ],
+  [
    "Umeå",
    "Skellefteå",
    "Piteå",
    "Luleå"
+  ],
+  [
+   "Toamasina",
+   "Vondrozo",
+   "Vohipeno",
+   "Vohipaho"
   ],
   [
    "Vittoria",
@@ -207,6 +213,12 @@
    "Germasógeia",
    "Stróvolos",
    "Pafos"
+  ],
+  [
+   "Vacoas",
+   "Triolet",
+   "Saint Pierre",
+   "Quatre Bornes"
   ],
   [
    "Lisala",
@@ -296,19 +308,7 @@
    "Ischia Porto",
    "Ischia",
    "Forio"
-  ],
-  [
-   "At Tāj",
-   "Al Jawf"
-  ],
-  [
-   "Nansio",
-   "Muriti"
-  ],
-  [
-   "Mulongo",
-   "Manono"
   ]
  ],
- "segundos": 430
+ "segundos": 22
 }
