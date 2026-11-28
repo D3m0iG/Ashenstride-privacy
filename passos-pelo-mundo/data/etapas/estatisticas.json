@@ -1,21 +1,7 @@
 {
- "gerado": "2026-11-28 00:36 UTC",
- "ultimo_grupo": [
-  "ZM",
-  "MW",
-  "MZ",
-  "ZW",
-  "BW",
-  "NA",
-  "ZA",
-  "LS",
-  "SZ",
-  "MG",
-  "MU",
-  "KM",
-  "SC"
- ],
- "modo": "local",
+ "gerado": "2026-11-28 00:44 UTC",
+ "ultimo_grupo": [],
+ "modo": "demo",
  "paises_no_grafo": [
   "MA",
   "DZ",
@@ -114,22 +100,21 @@
   "CY"
  ],
  "nos": 11104,
- "etapas": 28109,
- "km_total": 1322541,
- "bytes_desenho": 16487642,
+ "etapas": 28165,
+ "km_total": 1326742,
+ "bytes_desenho": 16535753,
  "esta_corrida": {
-  "ok": 1801,
-  "erro": 11,
-  "barco": 70,
-  "desvio": 21
+  "ok": 56,
+  "erro": 365,
+  "barco": 14,
+  "desvio": 4
  },
- "falhadas_total": 1390,
+ "falhadas_total": 1442,
  "componentes": [
   5692,
-  1340,
-  897,
+  1899,
+  899,
   843,
-  559,
   247,
   97,
   62,
@@ -139,6 +124,7 @@
   16,
   15,
   14,
+  11,
   11
  ],
  "grupos_isolados": [
@@ -159,12 +145,6 @@
    "Yeovil",
    "Yeadon",
    "Yate"
-  ],
-  [
-   "Nchelenge",
-   "Nakonde",
-   "Mpulungu",
-   "Mporokoso"
   ],
   [
    "Umeå",
@@ -308,7 +288,11 @@
    "Ischia Porto",
    "Ischia",
    "Forio"
+  ],
+  [
+   "At Tāj",
+   "Al Jawf"
   ]
  ],
- "segundos": 22
+ "segundos": 435
 }
