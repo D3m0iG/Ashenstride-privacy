@@ -1,7 +1,23 @@
 {
- "gerado": "2026-11-28 00:44 UTC",
- "ultimo_grupo": [],
- "modo": "demo",
+ "gerado": "2026-11-28 04:02 UTC",
+ "ultimo_grupo": [
+  "SN",
+  "GM",
+  "GW",
+  "GN",
+  "SL",
+  "LR",
+  "CI",
+  "GH",
+  "TG",
+  "BJ",
+  "NG",
+  "BF",
+  "ML",
+  "NE",
+  "CV"
+ ],
+ "modo": "local",
  "paises_no_grafo": [
   "MA",
   "DZ",
@@ -100,19 +116,20 @@
   "CY"
  ],
  "nos": 11104,
- "etapas": 28165,
- "km_total": 1326742,
- "bytes_desenho": 16535753,
+ "etapas": 30954,
+ "km_total": 1530323,
+ "bytes_desenho": 18526314,
  "esta_corrida": {
-  "ok": 56,
-  "erro": 365,
-  "barco": 14,
-  "desvio": 4
+  "ok": 2789,
+  "barco": 126,
+  "erro": 26,
+  "desvio": 19
  },
- "falhadas_total": 1442,
+ "falhadas_total": 1613,
  "componentes": [
   5692,
   1899,
+  1008,
   899,
   843,
   247,
@@ -124,7 +141,6 @@
   16,
   15,
   14,
-  11,
   11
  ],
  "grupos_isolados": [
@@ -133,6 +149,12 @@
    "Tog Wajaale",
    "Zeila",
    "Ruqi"
+  ],
+  [
+   "Ziguinchor",
+   "Yoff",
+   "Vélingara",
+   "Touba"
   ],
   [
    "Tobruk",
@@ -288,11 +310,7 @@
    "Ischia Porto",
    "Ischia",
    "Forio"
-  ],
-  [
-   "At Tāj",
-   "Al Jawf"
   ]
  ],
- "segundos": 435
+ "segundos": 81
 }
