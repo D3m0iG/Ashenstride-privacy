@@ -312,7 +312,7 @@ var T = {
 pt: {
   appTitle:'Passos pelo Mundo', steps:'passos', tabMap:'Mapa', tabPassport:'Passaporte', tabCollections:'Coleções', tabDiary:'Diário',
   kCity:'Cidade', kCapital:'Capital', kMonument:'Monumento', undiscovered:'Por descobrir', straight:'{km} km em linha reta', poiHint:'O nome revela-se quando lá chegares ou passares perto.', alreadyHere:'Já estás aqui.', goThere:'Ir até lá', close:'Fechar',
-  toSea:'Travessia marítima concluída', evSea:'Travessia marítima', seaNote:'Esta viagem inclui {n} travessia(s) marítima(s): chegas ao porto e apareces do outro lado, sem gastar passos.',
+  toSea:'Travessia marítima concluída', evSea:'Travessia marítima', toGap:'Ligação virtual concluída', evGap:'Ligação virtual', gapNote:'Esta viagem inclui {n} ligação(ões) virtual(is) (zona sem estradas, deserto ou mar): apareces do outro lado, sem gastar passos.', seaNote:'Esta viagem inclui {n} travessia(s) marítima(s): chegas ao porto e apareces do outro lado, sem gastar passos.',
   walk:'Caminhar', stop:'Parar', autoSub:'automático', here:'Posição atual',
   hudNoTrip:'Sem viagem ativa', hudPick:'Escolhe um destino', hudBank:'{n} passos guardados',
   hudDone:'{a} km feitos', hudLeft:'{b} km em falta', hudStepsLeft:'Faltam {n} passos',
@@ -353,7 +353,7 @@ pt: {
 en: {
   appTitle:'Steps Around the World', steps:'steps', tabMap:'Map', tabPassport:'Passport', tabCollections:'Collections', tabDiary:'Journal',
   kCity:'City', kCapital:'Capital', kMonument:'Monument', undiscovered:'Undiscovered', straight:'{km} km as the crow flies', poiHint:'The name is revealed when you arrive or pass nearby.', alreadyHere:'You are already here.', goThere:'Go there', close:'Close',
-  toSea:'Sea crossing completed', evSea:'Sea crossing', seaNote:'This trip includes {n} sea crossing(s): you reach the port and appear on the other side, without spending steps.',
+  toSea:'Sea crossing completed', evSea:'Sea crossing', toGap:'Virtual link completed', evGap:'Virtual link', gapNote:'This trip includes {n} virtual link(s) (roadless area, desert or sea): you appear on the other side, without spending steps.', seaNote:'This trip includes {n} sea crossing(s): you reach the port and appear on the other side, without spending steps.',
   walk:'Walk', stop:'Stop', autoSub:'automatic', here:'Current position',
   hudNoTrip:'No active trip', hudPick:'Pick a destination', hudBank:'{n} steps saved',
   hudDone:'{a} km done', hudLeft:'{b} km to go', hudStepsLeft:'{n} steps to go',
@@ -419,10 +419,10 @@ function decodePolyline(str, precision) { // formato usado pelo Valhalla (precis
 function buildRoute(coords) { // junta as distâncias acumuladas a uma linha
   var pts = [], cum = [], total = 0, i, last = null, jumps = [];
   for (i = 0; i < coords.length; i++) {
-    var p = [Number(coords[i][0]), Number(coords[i][1])], jump = coords[i][2] === 1;
+    var p = [Number(coords[i][0]), Number(coords[i][1])], jump = coords[i][2] === 1 || coords[i][2] === 2;
     if (!isFinite(p[0]) || !isFinite(p[1])) continue;
     if (last) { if (jump) { /* travessia marítima: não custa passos */ } else { var d = hav(last, p); if (d < 0.01) continue; total += d; } }
-    if (jump && last) { p.push(1); jumps.push({ d: total, i: pts.length }); }
+    if (jump && last) { p.push(coords[i][2]); jumps.push({ d: total, i: pts.length, k: coords[i][2] }); }
     pts.push(p); cum.push(total); last = p;
   }
   return { coords: pts, cum: cum, total: total, jumps: jumps };
@@ -517,7 +517,7 @@ function saveNow() {
 }
 function saveSoon() { if (!saveTimer) saveTimer = setTimeout(saveNow, 900); }
 function saveRoute() { try { if (ROUTE) localStorage.setItem(CFG.saveKey + ':route', JSON.stringify(roundCoords6(ROUTE.coords))); else localStorage.removeItem(CFG.saveKey + ':route'); } catch (e) {} }
-function roundCoords6(coords) { return coords.map(function (c) { var o = [Math.round(c[0] * 1e6) / 1e6, Math.round(c[1] * 1e6) / 1e6]; if (c[2] === 1) o.push(1); return o; }); }
+function roundCoords6(coords) { return coords.map(function (c) { var o = [Math.round(c[0] * 1e6) / 1e6, Math.round(c[1] * 1e6) / 1e6]; if (c[2] === 1 || c[2] === 2) o.push(c[2]); return o; }); }
 function loadRoute() { try { var raw = localStorage.getItem(CFG.saveKey + ':route'); if (raw) { var r = buildRoute(JSON.parse(raw)); if (r.coords.length > 1) return r; } } catch (e) {} return null; }
 
 /* =====================================================================
@@ -613,12 +613,13 @@ function walkSegment(d0, d1) { // percorre o troço aos poucos, para não saltar
     if (d >= d1) break;
   }
   if (ROUTE.jumps && S.trip) {
-    while ((S.trip.sea || 0) < ROUTE.jumps.length && ROUTE.jumps[S.trip.sea || 0].d <= d1) { S.trip.sea = (S.trip.sea || 0) + 1; seaCross(); }
+    while ((S.trip.sea || 0) < ROUTE.jumps.length && ROUTE.jumps[S.trip.sea || 0].d <= d1) { var jk = ROUTE.jumps[S.trip.sea || 0].k; S.trip.sea = (S.trip.sea || 0) + 1; seaCross(jk); }
   }
 }
-function seaCross() {
-  S.log.push({ t: Date.now(), k: 'sea', id: '' });
-  toast(t('toSea'));
+function seaCross(kind) {
+  var gap = kind === 2;
+  S.log.push({ t: Date.now(), k: gap ? 'gap' : 'sea', id: '' });
+  toast(t(gap ? 'toGap' : 'toSea'));
 }
 function detect(p) {
   if (COUNTRIES) {
@@ -739,8 +740,9 @@ function addStages(g, ferries) {
   ((ferries && ferries.links) || []).forEach(function (l) {
     var a = snapNode(g.nodes, l[1][0], l[1][1]), b = snapNode(g.nodes, l[3][0], l[3][1]);
     if (a < 0 || b < 0 || a === b) return;
-    var fw = Math.max(20000, 0.5 * hav([g.nodes[a][1], g.nodes[a][2]], [g.nodes[b][1], g.nodes[b][2]])); // custo só para escolher o caminho: prefere terra quando é comparável
-    adj[a].push([b, fw]); adj[b].push([a, fw]); ferry[Math.min(a, b) + '-' + Math.max(a, b)] = true;
+    var dd = hav([g.nodes[a][1], g.nodes[a][2]], [g.nodes[b][1], g.nodes[b][2]]), kind = l[4] === 'g' ? 2 : l[4] === 'r' ? 3 : 1; // 1 mar, 2 ligação virtual, 3 reta a pé
+    var fw = kind === 3 ? dd * 1.2 : kind === 2 ? Math.max(20000, dd) : Math.max(20000, 0.5 * dd); // custo só para escolher o caminho: prefere terra quando é comparável
+    adj[a].push([b, fw]); adj[b].push([a, fw]); ferry[Math.min(a, b) + '-' + Math.max(a, b)] = kind;
   });
   g.nodes.forEach(function (n, i) { if (!adj[i].length) return; var k = Math.floor(n[1]) + ',' + Math.floor(n[2]); (grid[k] || (grid[k] = [])).push(i); });
   STG = { nodes: g.nodes, adj: adj, grid: grid, ferry: ferry, chunks: (STG && STG.chunks) || {} };
@@ -781,6 +783,7 @@ function loadChunk(name) {
 function stageCoords(path) {
   var names = {}, i;
   function isFerry(a, b) { return !!STG.ferry[Math.min(a, b) + '-' + Math.max(a, b)]; }
+  function fkind(a, b) { return STG.ferry[Math.min(a, b) + '-' + Math.max(a, b)]; }
   for (i = 0; i + 1 < path.length; i++) if (!isFerry(path[i], path[i + 1])) names[chunkName(Math.min(path[i], path[i + 1]))] = 1;
   return Promise.all(Object.keys(names).map(loadChunk)).then(function () {
     var out = [], afterSea = false;
@@ -789,7 +792,9 @@ function stageCoords(path) {
       if (isFerry(path[i], path[i + 1])) {
         var na = STG.nodes[path[i]], nb = STG.nodes[path[i + 1]];
         if (!out.length) out.push([na[1], na[2]]);
-        out.push([nb[1], nb[2], 1]); afterSea = true; continue;
+        var fk = fkind(path[i], path[i + 1]);
+        if (fk === 3) { out.push([nb[1], nb[2]]); continue; }
+        out.push([nb[1], nb[2], fk]); afterSea = true; continue;
       }
       var enc = STG.chunks[chunkName(a)][STG.nodes[a][0] + '-' + STG.nodes[b][0]];
       if (!enc) throw mkErr('failed');
@@ -812,8 +817,8 @@ function viaStages(a, b, na, nb, live) {
   return stageCoords(path).then(function (mid) {
     return Promise.all([link(a, mid[0], na.d), link(mid[mid.length - 1], b, nb.d)]).then(function (l) {
       var out = (l[0] || []).concat(mid, l[1] || []);
-      var sea = 0; out.forEach(function (c) { if (c[2] === 1) sea++; });
-      return { coords: out, source: 'etapas', sea: sea };
+      var sea = 0, gap = 0; out.forEach(function (c) { if (c[2] === 1) sea++; else if (c[2] === 2) gap++; });
+      return { coords: out, source: 'etapas', sea: sea, gap: gap };
     });
   });
 }
@@ -1132,7 +1137,7 @@ function diaryHtml() {
   if (!S.log.length) h += '<p class="note">' + esc(t('noEvents')) + '</p>';
   else { h += '<ul class="items">'; S.log.slice().reverse().slice(0, 60).forEach(function (e) {
     var name = e.k === 'country' ? countryName(e.id) : (function () { var q = POI_BY_ID[e.id]; return q ? placeName(q) : e.id; })();
-    if (e.k === 'sea') { h += '<li><span>' + esc(t('evSea')) + '</span><time>' + esc(dateStr(e.t)) + '</time></li>'; return; }
+    if (e.k === 'sea' || e.k === 'gap') { h += '<li><span>' + esc(t(e.k === 'gap' ? 'evGap' : 'evSea')) + '</span><time>' + esc(dateStr(e.t)) + '</time></li>'; return; }
     var key = e.k === 'country' ? 'evCountry' : e.k === 'capital' ? 'evCapital' : e.k === 'city' ? 'evCity' : 'evMonument';
     h += '<li><span>' + esc(t(key, { name: name })) + '</span><time>' + esc(dateStr(e.t)) + '</time></li>'; }); h += '</ul>'; }
   return h + '</div>';
@@ -1196,6 +1201,7 @@ function renderPlanner() {
     h += '<p class="note' + (plan.route.source === 'offline' ? ' warn' : '') + '">' + esc(t(plan.route.source === 'etapas' ? 'srcEtapas' : plan.route.source === 'valhalla' ? 'srcValhalla' : plan.route.source === 'graphhopper' ? 'srcGraphhopper' : 'srcOffline')) + '</p>';
     h += '<button type="button" class="btn go" id="plStart">' + esc(t('start')) + '</button>';
     if (plan.route.sea) h += '<p class="note">' + esc(t('seaNote', { n: plan.route.sea })) + '</p>';
+    if (plan.route.gap) h += '<p class="note">' + esc(t('gapNote', { n: plan.route.gap })) + '</p>';
     if (plan.route.source === 'offline') h += '<button type="button" class="btn alt" id="plCalc">' + esc(t('retry')) + '</button>';
   } else {
     h += '<button type="button" class="btn" id="plCalc"' + (plan.status === 'loading' ? ' disabled' : '') + '>' + esc(t('calc')) + '</button>';
