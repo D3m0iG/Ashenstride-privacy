@@ -1,12 +1,25 @@
 {
- "gerado": "2026-11-27 23:53 UTC",
+ "gerado": "2026-11-28 00:22 UTC",
  "ultimo_grupo": [
-  "MA",
-  "DZ",
-  "TN",
-  "LY",
-  "EG",
-  "MR"
+  "CM",
+  "TD",
+  "CF",
+  "GA",
+  "GQ",
+  "CG",
+  "CD",
+  "AO",
+  "SD",
+  "SS",
+  "ET",
+  "ER",
+  "DJ",
+  "SO",
+  "KE",
+  "UG",
+  "RW",
+  "BI",
+  "TZ"
  ],
  "modo": "local",
  "paises_no_grafo": [
@@ -107,17 +120,19 @@
   "CY"
  ],
  "nos": 11104,
- "etapas": 22702,
- "km_total": 752093,
- "bytes_desenho": 10258301,
+ "etapas": 26308,
+ "km_total": 1135909,
+ "bytes_desenho": 14618383,
  "esta_corrida": {
-  "ok": 2523,
-  "desvio": 67,
-  "barco": 32
+  "ok": 3606,
+  "barco": 191,
+  "erro": 96,
+  "desvio": 55
  },
- "falhadas_total": 946,
+ "falhadas_total": 1288,
  "componentes": [
   5692,
+  1340,
   897,
   843,
   247,
@@ -129,11 +144,16 @@
   15,
   11,
   11,
-  8,
-  7,
-  5
+  11,
+  8
  ],
  "grupos_isolados": [
+  [
+   "Wanlaweyn",
+   "Tog Wajaale",
+   "Zeila",
+   "Ruqi"
+  ],
   [
    "Tobruk",
    "Qaryat Sulūq",
@@ -189,6 +209,12 @@
    "Pafos"
   ],
   [
+   "Lisala",
+   "Gbadolite",
+   "Buta",
+   "Businga"
+  ],
+  [
    "Son Rapinya",
    "Pollença",
    "Palma de Maiorca",
@@ -237,9 +263,24 @@
    "Ytrebygda"
   ],
   [
+   "Zanzibar",
+   "Sokoni",
+   "Nungwi"
+  ],
+  [
+   "Wete",
+   "Mkoani",
+   "Chake Chake"
+  ],
+  [
    "Rethymno",
    "Chania",
    "Iráclio"
+  ],
+  [
+   "Nioki",
+   "Mushie",
+   "Bolobo"
   ],
   [
    "Santa Eulalia del Río",
@@ -261,21 +302,13 @@
    "Al Jawf"
   ],
   [
-   "Santa Cruz de la Palma",
-   "Los Llanos de Aridane"
+   "Nansio",
+   "Muriti"
   ],
   [
-   "Maó",
-   "Ciutadella"
-  ],
-  [
-   "Bastia",
-   "Ajaccio"
-  ],
-  [
-   "Mo i Rana",
-   "Bodø"
+   "Mulongo",
+   "Manono"
   ]
  ],
- "segundos": 50
+ "segundos": 430
 }
